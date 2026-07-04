@@ -27,6 +27,7 @@
   @keyframes sprout{0%{opacity:0;transform:translateY(26px) scale(.15)}55%{opacity:1;transform:translateY(-6px) scale(1.12)}100%{opacity:1;transform:translateY(0) scale(1)}}
   @keyframes pollen{0%{transform:translate(0,0);opacity:.4}50%{transform:translate(14px,-26px);opacity:.85}100%{transform:translate(0,0);opacity:.4}}
   @keyframes hintFade{0%,100%{opacity:.55}50%{opacity:1}}
+  @keyframes btnWait{0%,100%{transform:scale(.965)}50%{transform:scale(.99)}}
   @keyframes glowSoft{0%,100%{opacity:.55}50%{opacity:.85}}
   @keyframes owlBlink{0%,90%,100%{transform:scaleY(0)}94%{transform:scaleY(1)}}
   @keyframes owlZzz{0%{transform:translateY(8px) scale(.6);opacity:0}25%{opacity:.9}100%{transform:translateY(-34px) scale(1.15);opacity:0}}
@@ -48,7 +49,9 @@
   .owl-cool-g{animation:owlGlasses 1.5s cubic-bezier(.34,1.3,.6,1) both;}
 
   /* ---------- screens ---------- */
-  .screen{position:absolute; inset:0;}
+  .screen{position:absolute; inset:0; transition:filter .7s ease;}
+  /* wait-lock: the whole screen calmly greys out — "nespěchej, ještě neklikej" */
+  .screen.waiting{filter:grayscale(.72) brightness(.95);}
   .rise{animation:riseIn .6s ease both;}
 
   /* garden / summary shared bg pieces */
@@ -98,6 +101,12 @@
   .qbig{font-size:clamp(52px,10vmin,116px); font-weight:800; line-height:1; text-align:center;}
   .gap{display:inline-flex; align-items:center; justify-content:center; min-width:.7em; height:.9em;
     margin:0 .06em; background:rgba(246,213,130,.42); border:4px dashed #e8c877; border-radius:16px; vertical-align:middle;}
+  /* chosen answer dropped into the question/formula after a pick */
+  .gapfill{display:inline-flex; align-items:center; justify-content:center; min-width:.7em;
+    margin:0 .06em; padding:0 .12em; border-radius:16px; vertical-align:middle; font-weight:800;
+    animation:riseIn .35s ease both;}
+  .gapfill.ok{color:var(--green-ink); background:rgba(134,191,103,.22);}
+  .gapfill.no{color:#c47b62; background:rgba(196,123,98,.18);}
   .qsentence{font-size:clamp(20px,3.4vmin,30px); font-weight:600; color:var(--muted2); text-align:center; max-width:680px; line-height:1.35;}
   .qsentence b{color:var(--ink); letter-spacing:.02em;}
   /* sentence-focused (Věty) layout */
@@ -123,9 +132,17 @@
     box-shadow:0 16px 32px -14px rgba(90,70,40,.5); transition:opacity 1.1s ease, transform .28s ease, box-shadow 1.1s ease;}
   .iybtn:hover{transform:translateY(-5px);}
   .iybtn:active{transform:translateY(-1px);}
-  /* locked state (wait-lock) */
-  .answers.locked .abtn,.answers.locked .iybtn{opacity:.42; transform:scale(.95);
-    box-shadow:0 2px 6px -4px rgba(90,70,40,.3); pointer-events:none;}
+  /* locked state (wait-lock): unmistakably "not yet — thinking", with a calm breathing cue */
+  .answers.locked .abtn,.answers.locked .iybtn{
+    color:#b7a988; background:#ece3cd; border-color:#ddd0ac; border-style:dashed;
+    box-shadow:0 2px 6px -4px rgba(90,70,40,.22);
+    cursor:not-allowed; pointer-events:none;
+    animation:btnWait 2.6s ease-in-out infinite;}
+  .answers.locked .abtn:hover,.answers.locked .iybtn:hover,
+  .answers.locked .abtn:active,.answers.locked .iybtn:active{transform:none;}
+  /* gentle offset so the pair breathes like a soft wave, never in urgent unison */
+  .answers.locked .mgrid .abtn:nth-child(2n),
+  .answers.locked .iyrow .iybtn:nth-child(2){animation-delay:.9s;}
 
   /* praise + wrong */
   .praise{display:flex; flex-direction:column; align-items:center; gap:18px; animation:riseIn .5s ease both;}
@@ -137,6 +154,10 @@
   .wrongcard .e{font-size:clamp(17px,2.6vmin,20px); font-weight:600; color:var(--muted2); text-align:center; line-height:1.45;}
   .wrongcard .e b{color:#8a7350;}
   .explainnote{font-size:clamp(17px,2.6vmin,20px); font-weight:700; color:#8a7350; text-align:center; max-width:560px; line-height:1.4;}
+  /* answer recall on result screens */
+  .pickline{font-size:clamp(17px,2.6vmin,21px); font-weight:700; color:var(--muted2); text-align:center; line-height:1.5;}
+  .pick-mine{color:#c47b62; font-weight:800;}
+  .pick-right{color:var(--green-ink); font-weight:800;}
 
   /* overlay (parent + gate + confirm) */
   .overlay{position:absolute; inset:0; z-index:80; display:flex; align-items:center; justify-content:center;
@@ -201,7 +222,7 @@
 </head>
 <body>
 <div id="app"></div>
-<div class="ver">v0.4</div>
+<div class="ver">v0.7</div>
 
 <script>
 "use strict";
@@ -656,6 +677,7 @@ function startQuestion(){
   R.current=nextItem();
   R.presented++;
   R.feedback=null;
+  R.pick=null;
   R.needsExplain = DB.settings.explainMode && (R.presented % 4 === 0);
   // record seen
   if(R.current.topic==='math'){ var k=R.current.key; var st=factStat(k); st.seen++; DB.facts[k]=st; }
@@ -664,12 +686,13 @@ function startQuestion(){
   setLocked(true);
   renderRound();
   clearTimeout(G._lockT);
-  G._lockT=setTimeout(function(){ setLocked(false); var el=app.querySelector('.answers'); if(el) el.classList.remove('locked'); var owlb=app.querySelector('.owlbox'); if(owlb) owlb.classList.remove('think'); var h=app.querySelector('.hint'); if(h) h.textContent='Vyber, co ti přijde správné'; }, 3000);
+  G._lockT=setTimeout(function(){ setLocked(false); var sc=app.querySelector('.screen'); if(sc) sc.classList.remove('waiting'); var el=app.querySelector('.answers'); if(el) el.classList.remove('locked'); var owlb=app.querySelector('.owlbox'); if(owlb) owlb.classList.remove('think'); var h=app.querySelector('.hint'); if(h) h.textContent='Vyber, co ti přijde správné'; }, 3000);
 }
 function setLocked(v){ G.locked=v; }
 
-function answer(correct, item){
+function answer(correct, item, pick){
   var R=G.round; if(G.locked) return; if(R.feedback) return;
+  R.pick=pick;
   if(item.topic==='math'){ var st=factStat(item.key); if(correct) st.correct++; else st.wrong++; DB.facts[item.key]=st; }
   else { var ws=wordStat(item.w.id); if(correct) ws.correct++; else ws.wrong++; DB.words[item.w.id]=ws; }
   if(correct){
@@ -873,13 +896,16 @@ function renderRound(){
   var owlColHTML='<div class="owlcol"><div class="'+owlAnimClass+'">'+owlSVG()+'</div><div class="hint">'+hintText+'</div></div>';
 
   if(it.topic==='math'){
-    questionHTML='<div class="qbig">'+it.a+' × '+it.b+' = ?</div>';
+    var mtail = (R.feedback && R.pick!=null)
+      ? '= <span class="gapfill '+(R.feedback==='correct'?'ok':'no')+'">'+esc(String(R.pick))+'</span>'
+      : '= ?';
+    questionHTML='<div class="qbig">'+it.a+' × '+it.b+' '+mtail+'</div>';
     if(R.feedback==='correct'){
       answersHTML=praiseHTML(R);
     } else if(R.feedback==='wrong'){
       answersHTML=''+
         '<div class="center" style="gap:20px;">'+
-          wrongContinueHTML(R,'To nevadí, počítej v klidu.','<span style="font-size:1.2em; color:#8a7350; font-weight:800;">'+it.a+' × '+it.b+' = '+(it.a*it.b)+'</span>')+
+          wrongContinueHTML(R,'To nevadí, počítej v klidu.',pickCompareHTML(R,it.a+' × '+it.b+' = '+(it.a*it.b)))+
         '</div>';
     } else {
       var opts=R._mathOpts || (R._mathOpts=mathAnswers(it.a,it.b));
@@ -891,7 +917,10 @@ function renderRound(){
   } else {
     var w=it.w;
     var form=(DB.settings.setup&&DB.settings.setup.czechForm)||'slova';
-    var inlineGap='<span class="wgap">'+esc(w.pre)+'<span class="gap"></span>'+esc(w.post)+'</span>';
+    var gapInner = (R.feedback && R.pick!=null)
+      ? '<span class="gapfill '+(R.feedback==='correct'?'ok':'no')+'">'+esc(String(R.pick))+'</span>'
+      : '<span class="gap"></span>';
+    var inlineGap='<span class="wgap">'+esc(w.pre)+gapInner+esc(w.post)+'</span>';
     if(form==='vety' && w.sentence){
       questionHTML='<div class="qsent">'+w.sentence.replace('___', inlineGap)+'</div>';
     } else {
@@ -907,7 +936,8 @@ function renderRound(){
       answersHTML=''+
         '<div class="center" style="gap:18px;">'+
           '<div class="wrongcard"><div class="t">Tohle semínko ještě potřebuje čas</div>'+
-          '<div class="e">'+esc(w.explain)+'</div></div>'+
+          '<div class="e">'+esc(w.explain)+'</div>'+
+          pickCompareHTML(R, esc(w.pre)+w.answer+esc(w.post))+'</div>'+
           continueBtnHTML(R)+
         '</div>';
     } else {
@@ -920,7 +950,7 @@ function renderRound(){
   }
 
   var html=''+
-  '<div class="screen rise" style="background:linear-gradient(180deg,#fdf7ea 0%,#f6edd4 100%); display:flex; flex-direction:column;">'+
+  '<div class="screen rise'+(G.locked?' waiting':'')+'" style="background:linear-gradient(180deg,#fdf7ea 0%,#f6edd4 100%); display:flex; flex-direction:column;">'+
     head+
     '<div class="qwrap">'+
       questionHTML+
@@ -936,13 +966,13 @@ function renderRound(){
   if(!R.feedback){
     if(it.topic==='math'){
       var btns=app.querySelectorAll('.abtn');
-      btns.forEach(function(b){ b.addEventListener('click', function(){ if(G.locked) return; answer(parseInt(b.getAttribute('data-v'),10)===it.a*it.b, it); }); });
+      btns.forEach(function(b){ b.addEventListener('click', function(){ if(G.locked) return; var v=parseInt(b.getAttribute('data-v'),10); answer(v===it.a*it.b, it, v); }); });
     } else {
       var ibtns=app.querySelectorAll('.iybtn');
-      ibtns.forEach(function(b){ b.addEventListener('click', function(){ if(G.locked) return; answer(b.getAttribute('data-v')===it.w.answer, it); }); });
+      ibtns.forEach(function(b){ b.addEventListener('click', function(){ if(G.locked) return; var v=b.getAttribute('data-v'); answer(v===it.w.answer, it, v); }); });
     }
   } else {
-    var cont=app.querySelector('#contBtn'); if(cont) cont.addEventListener('click', function(){ R._mathOpts=null; continueRound(); });
+    var cont=app.querySelector('#contBtn'); if(cont) cont.addEventListener('click', function(){ R._mathOpts=null; R.pick=null; continueRound(); });
   }
 }
 
@@ -952,9 +982,16 @@ function continueBtnHTML(R){
   return note+'<button class="cta small" id="contBtn">'+label+'</button>';
 }
 function praiseHTML(R){
+  // the chosen (correct) answer is now shown filled into the question itself,
+  // so no separate "Tvoje odpověď" line is needed here.
   return '<div class="praise">'+bigSprout()+
     '<div class="msg">Výborně! Vykvetla nová kytička.</div>'+
     continueBtnHTML(R)+'</div>';
+}
+function pickCompareHTML(R, rightHTML){
+  var mine = (R.pick!=null)
+    ? '<div class="pickline">Tvoje odpověď: <span class="pick-mine">'+esc(String(R.pick))+'</span></div>' : '';
+  return mine+'<div class="pickline">Správně: <span class="pick-right">'+rightHTML+'</span></div>';
 }
 function wrongContinueHTML(R,msg,extra){
   return '<div class="wrongcard"><div class="t">'+esc(msg)+'</div><div class="e">'+extra+'</div></div>'+continueBtnHTML(R);

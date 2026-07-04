@@ -100,6 +100,9 @@
     margin:0 .06em; background:rgba(246,213,130,.42); border:4px dashed #e8c877; border-radius:16px; vertical-align:middle;}
   .qsentence{font-size:clamp(20px,3.4vmin,30px); font-weight:600; color:var(--muted2); text-align:center; max-width:680px; line-height:1.35;}
   .qsentence b{color:var(--ink); letter-spacing:.02em;}
+  /* sentence-focused (Věty) layout */
+  .qsent{font-size:clamp(30px,5.6vmin,56px); font-weight:800; color:var(--ink); text-align:center; max-width:900px; line-height:1.32;}
+  .wgap{display:inline-flex; align-items:baseline; white-space:nowrap;}
 
   .qrow{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:28px 52px; width:100%; max-width:940px;}
   .owlcol{display:flex; flex-direction:column; align-items:center; gap:12px; width:186px;}
@@ -172,11 +175,33 @@
   .gateDisp{font-size:34px; font-weight:800; text-align:center; letter-spacing:2px; min-height:44px; color:var(--ink);}
   .gateMsg{text-align:center; font-size:15px; font-weight:700; color:#c08a6a; min-height:20px;}
   .center{display:flex; flex-direction:column; align-items:center;}
+
+  /* ---------- setup screen (levels/modes) ---------- */
+  .setupscroll{position:absolute; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:16px; padding:26px 18px; overflow-y:auto;}
+  .setuptitle{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .setrow{display:flex; gap:18px; flex-wrap:wrap; justify-content:center; width:100%; max-width:840px;}
+  .tcard{flex:1 1 330px; max-width:400px; background:var(--cream); border:3px solid var(--border); border-radius:26px; padding:18px 20px 20px; box-shadow:0 16px 34px -18px rgba(90,70,40,.42); display:flex; flex-direction:column; gap:14px; transition:opacity .25s ease;}
+  .tcard.off{opacity:.45;}
+  .tcard .th{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .tcard .tt{font-size:23px; font-weight:800; display:flex; align-items:center; gap:8px;}
+  .tcard .tt .ic{font-size:26px;}
+  .readout{font-size:21px; font-weight:800; color:var(--green-ink); text-align:center; min-height:26px;}
+  .readout small{display:block; font-size:14px; font-weight:700; color:#b7a582; margin-top:2px;}
+  .slabels{display:flex; justify-content:space-between; font-size:13px; font-weight:800; color:#c2b087; letter-spacing:.5px; margin-top:-4px;}
+  .slider{-webkit-appearance:none; appearance:none; width:100%; height:16px; border-radius:12px; background:#efe4c4; border:2px solid var(--border2); outline:none; margin:8px 0;}
+  .slider::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:46px; height:46px; border-radius:50%; background:var(--green); border:5px solid var(--cream); box-shadow:0 5px 12px -4px rgba(90,120,50,.7); cursor:pointer;}
+  .slider::-moz-range-thumb{width:44px; height:44px; border-radius:50%; background:var(--green); border:5px solid var(--cream); box-shadow:0 5px 12px -4px rgba(90,120,50,.7); cursor:pointer;}
+  .slider:disabled{opacity:.5;}
+  .formseg{display:flex; gap:0; border:2.5px solid var(--border); border-radius:18px; overflow:hidden;}
+  .formseg button{flex:1; min-height:52px; font-size:19px; font-weight:800; border:none; background:#f6efdd; color:var(--muted2); cursor:pointer;}
+  .formseg button[aria-pressed="true"]{background:var(--green); color:#fff;}
+  .tcard.off .slider,.tcard.off .formseg{pointer-events:none;}
+  .setupwarn{font-size:15px; font-weight:800; color:#a5644f; text-align:center;}
 </style>
 </head>
 <body>
 <div id="app"></div>
-<div class="ver">v0.1</div>
+<div class="ver">v0.2</div>
 
 <script>
 "use strict";
@@ -190,7 +215,8 @@ var LSKEY='zahrada_v1';
 var DEFAULTS={
   settings:{ activeTables:[1,2,3,4,5,6,7,8,9,10],
              activeRows:['b','l','m','p','s','v','z'],
-             sessionLength:12, explainMode:false },
+             sessionLength:12, explainMode:false,
+             setup:{ mathOn:true, maxFactor:10, czechOn:true, czechForm:'slova', czechLevel:3 } },
   garden:{ totalFlowers:0 },
   facts:{}, words:{},
   daily:{ date:'', playMs:0, rounds:0 }
@@ -202,10 +228,17 @@ function loadDB(){
     var raw=localStorage.getItem(LSKEY);
     if(raw){ var d=JSON.parse(raw);
       DB.settings=Object.assign(clone(DEFAULTS.settings), d.settings||{});
+      // deep-merge setup so older saves gain new keys
+      DB.settings.setup=Object.assign(clone(DEFAULTS.settings.setup), (d.settings&&d.settings.setup)||{});
       // sanitize arrays
       if(!Array.isArray(DB.settings.activeTables)||!DB.settings.activeTables.length) DB.settings.activeTables=clone(DEFAULTS.settings.activeTables);
       if(!Array.isArray(DB.settings.activeRows)) DB.settings.activeRows=clone(DEFAULTS.settings.activeRows);
       if([8,12,16].indexOf(DB.settings.sessionLength)<0) DB.settings.sessionLength=12;
+      var su=DB.settings.setup;
+      su.maxFactor=Math.max(3,Math.min(10, su.maxFactor|0 || 10));
+      su.czechLevel=Math.max(1,Math.min(3, su.czechLevel|0 || 3));
+      if(su.czechForm!=='vety') su.czechForm='slova';
+      su.mathOn=su.mathOn!==false; su.czechOn=su.czechOn!==false;
       DB.garden=Object.assign(clone(DEFAULTS.garden), d.garden||{});
       DB.facts=d.facts||{}; DB.words=d.words||{};
       DB.daily=Object.assign(clone(DEFAULTS.daily), d.daily||{});
@@ -338,9 +371,13 @@ function factKey(a,b){ var lo=Math.min(a,b), hi=Math.max(a,b); return lo+'x'+hi;
 function factStat(k){ return DB.facts[k]||{seen:0,correct:0,wrong:0}; }
 function pickMathFact(avoidKey){
   var cands=[],a,b;
-  var tables=DB.settings.activeTables;
+  var maxF=(DB.settings.setup&&DB.settings.setup.maxFactor)||10;
+  var allowed=DB.settings.activeTables;
+  var tables=allowed.filter(function(t){ return t<=maxF; });
+  if(!tables.length) tables=allowed;   // parent allow-list wins if slider excludes all
+  var bMax=Math.min(10,maxF);
   for(var ti=0;ti<tables.length;ti++){ a=tables[ti];
-    for(b=1;b<=10;b++){
+    for(b=1;b<=bMax;b++){
       var k=factKey(a,b); if(k===avoidKey) continue;
       var st=factStat(k); var w=1;
       if(a===6||a===7||a===8||a===9) w*=2;
@@ -368,147 +405,164 @@ function mathAnswers(a,b){
 
 /* ---------------- vyjmenovaná slova bank ---------------- */
 // answer is the letter that fills the gap. options derived: long -> [í,ý], short -> [i,y].
-// sentence (optional) uses ___ where the target word goes; shown gapped for meaning context.
-function W(row,pre,post,answer,explain,sentence){
-  return {id:row+':'+pre+'_'+post+':'+answer, row:row, pre:pre, post:post, answer:answer, explain:explain, sentence:sentence||null};
+// level: 1=core, 2=derived/rarer, 3=tricky (homophones + i/y contrast traps).
+// sentence: base-form carrier (___ = whole word). Used in "Věty" mode + as context for
+// ambiguous gaps in "Slova" mode.
+function W(row,pre,post,answer,level,explain,sentence){
+  return {id:row+':'+pre+'_'+post+':'+answer, row:row, pre:pre, post:post, answer:answer,
+          level:level, explain:explain, sentence:sentence||null};
 }
 var BANK=[
   /* ---- B ---- */
-  W('b','b','t','ý','být (existovat) je vyjmenované slovo po B – píšeme ý. Pozor: bít = tlouct.','Chci ___ hodná.'),
-  W('b','b','t','í','bít (tlouct, udeřit) píšeme s měkkým í – není vyjmenované.','Zvon začal ___ poledne.'),
-  W('b','b','t','y','byt (místo, kde bydlíme) je vyjmenované slovo po B – tvrdé y.','Máme nový ___ ve městě.'),
-  W('b','ob','vatel','y','obyvatel patří mezi vyjmenovaná slova po B – bydlet, obyvatel, byt.'),
-  W('b','b','dlet','y','bydlet je vyjmenované slovo po B – tvrdé y.'),
-  W('b','b','dliště','y','bydliště (od bydlet) je vyjmenované slovo po B.'),
-  W('b','náb','tek','y','nábytek patří mezi vyjmenovaná slova po B – tvrdé y.'),
-  W('b','dob','tek','y','dobytek je vyjmenované slovo po B – tvrdé y.'),
-  W('b','dob','vat','ý','dobývat je vyjmenované slovo po B – píšeme ý.'),
-  W('b','zb','tek','y','zbytek (od zbývat) je vyjmenované slovo po B – tvrdé y.'),
-  W('b','zb','vat','ý','zbývat je vyjmenované slovo po B – píšeme ý.'),
-  W('b','b','lina','y','bylina (rostlina) je vyjmenované slovo po B – tvrdé y.'),
-  W('b','b','strý','y','bystrý je vyjmenované slovo po B – tvrdé y.'),
-  W('b','kob','la','y','kobyla je vyjmenované slovo po B – tvrdé y.'),
-  W('b','b','k','ý','býk je vyjmenované slovo po B – píšeme ý.'),
-  W('b','ob','čejný','y','obyčejný (od obyčej) je vyjmenované slovo po B – tvrdé y.'),
-  W('b','b','dlo','i','bidlo (dřevěná tyč) píšeme s měkkým i – pozor na bydlo!','Pták si sedl na dřevěné ___.'),
-  W('b','b','č','i','bič píšeme s měkkým i – není vyjmenované slovo.'),
+  W('b','b','t','ý',3,'být (existovat) je vyjmenované slovo po B – píšeme ý. Pozor: bít = tlouct.','Chci ___ hodná.'),
+  W('b','b','t','í',3,'bít (tlouct, udeřit) píšeme s měkkým í – není vyjmenované.','Zvon začal ___ poledne.'),
+  W('b','b','t','y',3,'byt (místo, kde bydlíme) je vyjmenované slovo po B – tvrdé y.','Máme nový ___ ve městě.'),
+  W('b','ob','vatel','y',2,'obyvatel patří mezi vyjmenovaná slova po B – bydlet, obyvatel, byt.','V našem domě bydlí nový ___.'),
+  W('b','b','dlet','y',1,'bydlet je vyjmenované slovo po B – tvrdé y.','Budeme ___ u babičky.'),
+  W('b','b','dliště','y',2,'bydliště (od bydlet) je vyjmenované slovo po B.','Napiš na obálku svoje ___.'),
+  W('b','náb','tek','y',2,'nábytek patří mezi vyjmenovaná slova po B – tvrdé y.','Do pokoje koupíme nový ___.'),
+  W('b','dob','tek','y',2,'dobytek je vyjmenované slovo po B – tvrdé y.','Na statku chovají ___.'),
+  W('b','dob','vat','ý',2,'dobývat je vyjmenované slovo po B – píšeme ý.','Rytíři budou ___ hrad.'),
+  W('b','zb','tek','y',2,'zbytek (od zbývat) je vyjmenované slovo po B – tvrdé y.','Snědla jsem ___ koláče.'),
+  W('b','zb','vat','ý',2,'zbývat je vyjmenované slovo po B – píšeme ý.','Bude ___ ještě dost času.'),
+  W('b','b','lina','y',1,'bylina (rostlina) je vyjmenované slovo po B – tvrdé y.','Máta je léčivá ___.'),
+  W('b','b','strý','y',1,'bystrý je vyjmenované slovo po B – tvrdé y.','Náš pejsek je moc ___.'),
+  W('b','kob','la','y',1,'kobyla je vyjmenované slovo po B – tvrdé y.','Na louce se pase ___.'),
+  W('b','b','k','ý',1,'býk je vyjmenované slovo po B – píšeme ý.','Na pastvině stojí velký ___.'),
+  W('b','ob','čejný','y',2,'obyčejný (od obyčej) je vyjmenované slovo po B – tvrdé y.','Byl to úplně ___ den.'),
+  W('b','b','dlo','i',3,'bidlo (dřevěná tyč) píšeme s měkkým i – pozor na bydlo!','Pták si sedl na dřevěné ___.'),
+  W('b','b','č','i',3,'bič píšeme s měkkým i – není vyjmenované slovo.','Kočí zvedl dlouhý ___.'),
   /* ---- L ---- */
-  W('l','sl','šet','y','slyšet je vyjmenované slovo po L – tvrdé y.'),
-  W('l','ml','n','ý','mlýn je vyjmenované slovo po L – píšeme ý.'),
-  W('l','ml','nář','y','mlynář (od mlýn) je vyjmenované slovo po L – tvrdé y.'),
-  W('l','bl','skat','ý','blýskat se je vyjmenované slovo po L – píšeme ý.'),
-  W('l','pol','kat','y','polykat je vyjmenované slovo po L – tvrdé y.'),
-  W('l','pl','nout','y','plynout je vyjmenované slovo po L – tvrdé y.'),
-  W('l','pl','n','y','plyn je vyjmenované slovo po L – tvrdé y.'),
-  W('l','pl','tvat','ý','plýtvat je vyjmenované slovo po L – píšeme ý.'),
-  W('l','l','sý','y','lysý je vyjmenované slovo po L – tvrdé y.'),
-  W('l','l','tko','ý','lýtko je vyjmenované slovo po L – píšeme ý.'),
-  W('l','l','ko','ý','lýko je vyjmenované slovo po L – píšeme ý.'),
-  W('l','l','že','y','lyže je vyjmenované slovo po L – tvrdé y.'),
-  W('l','l','žař','y','lyžař (od lyže) je vyjmenované slovo po L – tvrdé y.'),
-  W('l','pel','něk','y','pelyněk je vyjmenované slovo po L – tvrdé y.'),
-  W('l','pl','š','y','plyš je vyjmenované slovo po L – tvrdé y.'),
-  W('l','vzl','kat','y','vzlykat je vyjmenované slovo po L – tvrdé y.'),
-  W('l','l','ška','i','liška píšeme s měkkým i – není vyjmenované slovo.'),
-  W('l','l','pa','í','lípa píšeme s měkkým í – není vyjmenované slovo.'),
-  W('l','l','st','i','list píšeme s měkkým i – není vyjmenované slovo.'),
+  W('l','sl','šet','y',1,'slyšet je vyjmenované slovo po L – tvrdé y.','Chci dobře ___, co říkáš.'),
+  W('l','ml','n','ý',1,'mlýn je vyjmenované slovo po L – píšeme ý.','U řeky stojí starý ___.'),
+  W('l','ml','nář','y',2,'mlynář (od mlýn) je vyjmenované slovo po L – tvrdé y.','Ve mlýně pracuje ___.'),
+  W('l','bl','skat','ý',2,'blýskat se je vyjmenované slovo po L – píšeme ý.','Před bouřkou se bude ___.'),
+  W('l','pol','kat','y',1,'polykat je vyjmenované slovo po L – tvrdé y.','Musíš pomalu ___ sousto.'),
+  W('l','pl','nout','y',2,'plynout je vyjmenované slovo po L – tvrdé y.','Řeka bude klidně ___.'),
+  W('l','pl','n','y',1,'plyn je vyjmenované slovo po L – tvrdé y.','Ve sporáku hoří ___.'),
+  W('l','pl','tvat','ý',2,'plýtvat je vyjmenované slovo po L – píšeme ý.','Nesmíme ___ vodou.'),
+  W('l','l','sý','y',2,'lysý je vyjmenované slovo po L – tvrdé y.','Dědeček je skoro ___.'),
+  W('l','l','tko','ý',2,'lýtko je vyjmenované slovo po L – píšeme ý.','Po běhu mě bolí ___.'),
+  W('l','l','ko','ý',2,'lýko je vyjmenované slovo po L – píšeme ý.','Ze stromu jsme sloupli ___.'),
+  W('l','l','že','y',1,'lyže je vyjmenované slovo po L – tvrdé y.','V zimě si vezmu ___.'),
+  W('l','l','žař','y',2,'lyžař (od lyže) je vyjmenované slovo po L – tvrdé y.','Po svahu jede rychlý ___.'),
+  W('l','pel','něk','y',2,'pelyněk je vyjmenované slovo po L – tvrdé y.','Na mezi roste hořký ___.'),
+  W('l','pl','š','y',2,'plyš je vyjmenované slovo po L – tvrdé y.','Ten polštář je měkký ___.'),
+  W('l','vzl','kat','y',2,'vzlykat je vyjmenované slovo po L – tvrdé y.','Dítě začalo tiše ___.'),
+  W('l','l','ška','i',3,'liška píšeme s měkkým i – není vyjmenované slovo.','V lese žije ryšavá ___.'),
+  W('l','l','pa','í',3,'lípa píšeme s měkkým í – není vyjmenované slovo.','Před domem roste stará ___.'),
+  W('l','l','st','i',3,'list píšeme s měkkým i – není vyjmenované slovo.','Ze stromu spadl žlutý ___.'),
   /* ---- M ---- */
-  W('m','m','','y','my (my všichni) je vyjmenované slovo po M – tvrdé y. Pozor: mi = mně.','___ půjdeme domů.'),
-  W('m','m','','i','mi (dej mi) píšeme s měkkým i – 3. pád zájmena já.','Podej ___ ruku.'),
-  W('m','m','t','ý','mýt (umývat) je vyjmenované slovo po M – ý. Pozor: mít = vlastnit.','Musím si ___ ruce.'),
-  W('m','m','t','í','mít (vlastnit) píšeme s měkkým í – není vyjmenované.','Chci ___ nové boty.'),
-  W('m','m','slet','y','myslet je vyjmenované slovo po M – tvrdé y.'),
-  W('m','m','sl','y','mysl je vyjmenované slovo po M – tvrdé y.'),
-  W('m','m','šlenka','y','myšlenka (od myslet) je vyjmenované slovo po M – tvrdé y.'),
-  W('m','m','lit','ý','mýlit se je vyjmenované slovo po M – píšeme ý.'),
-  W('m','m','š','y','myš je vyjmenované slovo po M – tvrdé y.'),
-  W('m','hm','z','y','hmyz je vyjmenované slovo po M – tvrdé y.'),
-  W('m','m','dlo','ý','mýdlo (od mýt) je vyjmenované slovo po M – píšeme ý.'),
-  W('m','sm','sl','y','smysl (a průmysl) je vyjmenované slovo po M – tvrdé y.'),
-  W('m','prům','sl','y','průmysl je vyjmenované slovo po M – tvrdé y.'),
-  W('m','sm','kat','ý','smýkat je vyjmenované slovo po M – píšeme ý.'),
-  W('m','sm','k','y','smyk (od smýkat) je vyjmenované slovo po M – tvrdé y.'),
-  W('m','hlem','žď','ý','hlemýžď je vyjmenované slovo po M – píšeme ý.'),
-  W('m','zam','kat','y','zamykat je vyjmenované slovo po M – tvrdé y.'),
-  W('m','chm','ří','ý','chmýří je vyjmenované slovo po M – píšeme ý.'),
-  W('m','m','val','ý','mýval je vyjmenované slovo po M – píšeme ý.'),
-  W('m','m','ska','i','miska píšeme s měkkým i – není vyjmenované slovo.'),
-  W('m','m','lý','i','milý píšeme s měkkým i – není vyjmenované slovo.'),
-  W('m','m','nuta','i','minuta píšeme s měkkým i – není vyjmenované slovo.'),
+  W('m','m','','y',3,'my (my všichni) je vyjmenované slovo po M – tvrdé y. Pozor: mi = mně.','Zítra ___ půjdeme domů.'),
+  W('m','m','','i',3,'mi (dej mi) píšeme s měkkým i – 3. pád zájmena já.','Podej ___ ruku.'),
+  W('m','m','t','ý',3,'mýt (umývat) je vyjmenované slovo po M – ý. Pozor: mít = vlastnit.','Musím si ___ ruce.'),
+  W('m','m','t','í',3,'mít (vlastnit) píšeme s měkkým í – není vyjmenované.','Chci ___ nové boty.'),
+  W('m','m','slet','y',1,'myslet je vyjmenované slovo po M – tvrdé y.','Musíš na to ___.'),
+  W('m','m','sl','y',1,'mysl je vyjmenované slovo po M – tvrdé y.','Měla klidnou a bystrou ___.'),
+  W('m','m','šlenka','y',2,'myšlenka (od myslet) je vyjmenované slovo po M – tvrdé y.','Napadla mě dobrá ___.'),
+  W('m','m','lit','ý',2,'mýlit se je vyjmenované slovo po M – píšeme ý.','Každý se může ___.'),
+  W('m','m','š','y',1,'myš je vyjmenované slovo po M – tvrdé y.','Po sklepě běhá malá ___.'),
+  W('m','hm','z','y',1,'hmyz je vyjmenované slovo po M – tvrdé y.','Na louce bzučí ___.'),
+  W('m','m','dlo','ý',2,'mýdlo (od mýt) je vyjmenované slovo po M – píšeme ý.','Na umyvadle leží voňavé ___.'),
+  W('m','sm','sl','y',2,'smysl (a průmysl) je vyjmenované slovo po M – tvrdé y.','Ta věta nedává ___.'),
+  W('m','prům','sl','y',2,'průmysl je vyjmenované slovo po M – tvrdé y.','V našem městě je velký ___.'),
+  W('m','sm','kat','ý',2,'smýkat je vyjmenované slovo po M – píšeme ý.','Auto začalo na ledu ___.'),
+  W('m','sm','k','y',2,'smyk (od smýkat) je vyjmenované slovo po M – tvrdé y.','Auto dostalo na ledu ___.'),
+  W('m','hlem','žď','ý',1,'hlemýžď je vyjmenované slovo po M – píšeme ý.','Po dešti leze ___.'),
+  W('m','zam','kat','y',2,'zamykat je vyjmenované slovo po M – tvrdé y.','Nezapomeň ___ dveře.'),
+  W('m','chm','ří','ý',2,'chmýří je vyjmenované slovo po M – píšeme ý.','Z pampelišky lítá bílé ___.'),
+  W('m','m','val','ý',2,'mýval je vyjmenované slovo po M – píšeme ý.','Ten ___ má pruhovaný ocas.'),
+  W('m','m','ska','i',3,'miska píšeme s měkkým i – není vyjmenované slovo.','Na stole stojí modrá ___.'),
+  W('m','m','lý','i',3,'milý píšeme s měkkým i – není vyjmenované slovo.','Byl to moc ___ kluk.'),
+  W('m','m','nuta','i',3,'minuta píšeme s měkkým i – není vyjmenované slovo.','Zbývá poslední ___.'),
   /* ---- P ---- */
-  W('p','p','cha','ý','pýcha je vyjmenované slovo po P – píšeme ý.'),
-  W('p','p','šný','y','pyšný (od pýcha) je vyjmenované slovo po P – tvrdé y.'),
-  W('p','p','tel','y','pytel je vyjmenované slovo po P – tvrdé y.'),
-  W('p','p','l','y','pyl (prášek z květů) je vyjmenované slovo po P – tvrdé y. Pozor: pil = od pít.','Včela sbírá ___ z květů.'),
-  W('p','p','l','i','pil (od pít) píšeme s měkkým i – není vyjmenované.','Pejsek ___ vodu z misky.'),
-  W('p','netop','r','ý','netopýr je vyjmenované slovo po P – píšeme ý.'),
-  W('p','slep','š','ý','slepýš je vyjmenované slovo po P – píšeme ý.'),
-  W('p','p','kat','y','pykat (odpykat) je vyjmenované slovo po P – tvrdé y.'),
-  W('p','třp','tit','y','třpytit se je vyjmenované slovo po P – tvrdé y.'),
-  W('p','kop','to','y','kopyto je vyjmenované slovo po P – tvrdé y.'),
-  W('p','klop','tat','ý','klopýtat je vyjmenované slovo po P – píšeme ý.'),
-  W('p','p','sk','y','pysk je vyjmenované slovo po P – tvrdé y.'),
-  W('p','p','r','ý','pýr (plevel) je vyjmenované slovo po P – píšeme ý.'),
-  W('p','p','tlák','y','pytlák (od pytel) je vyjmenované slovo po P – tvrdé y.'),
-  W('p','p','la','i','pila (nástroj) píšeme s měkkým i – není vyjmenované slovo.'),
-  W('p','p','seň','í','píseň píšeme s měkkým í – není vyjmenované slovo.'),
-  W('p','p','vo','i','pivo píšeme s měkkým i – není vyjmenované slovo.'),
+  W('p','p','cha','ý',2,'pýcha je vyjmenované slovo po P – píšeme ý.','Přemohla ho velká ___.'),
+  W('p','p','šný','y',1,'pyšný (od pýcha) je vyjmenované slovo po P – tvrdé y.','Byl na svůj výkon ___.'),
+  W('p','p','tel','y',1,'pytel je vyjmenované slovo po P – tvrdé y.','V kůlně leží velký ___.'),
+  W('p','p','l','y',3,'pyl (prášek z květů) je vyjmenované slovo po P – tvrdé y. Pozor: pil = od pít.','Včela sbírá ___ z květů.'),
+  W('p','p','l','i',3,'pil (od pít) píšeme s měkkým i – není vyjmenované.','Pejsek ___ vodu z misky.'),
+  W('p','netop','r','ý',1,'netopýr je vyjmenované slovo po P – píšeme ý.','V noci létá ___.'),
+  W('p','slep','š','ý',2,'slepýš je vyjmenované slovo po P – píšeme ý.','Na mezi se plazí ___.'),
+  W('p','p','kat','y',2,'pykat (odpykat) je vyjmenované slovo po P – tvrdé y.','Za tu lež bude ___.'),
+  W('p','třp','tit','y',2,'třpytit se je vyjmenované slovo po P – tvrdé y.','Hvězdy se budou na nebi ___.'),
+  W('p','kop','to','y',1,'kopyto je vyjmenované slovo po P – tvrdé y.','Kůň si poranil ___.'),
+  W('p','klop','tat','ý',2,'klopýtat je vyjmenované slovo po P – píšeme ý.','Ve tmě jsem začala ___.'),
+  W('p','p','sk','y',2,'pysk je vyjmenované slovo po P – tvrdé y.','Kůň má měkký ___.'),
+  W('p','p','r','ý',2,'pýr (plevel) je vyjmenované slovo po P – píšeme ý.','Na zahradě roste plevel ___.'),
+  W('p','p','tlák','y',2,'pytlák (od pytel) je vyjmenované slovo po P – tvrdé y.','V lese číhá ___.'),
+  W('p','p','la','i',3,'pila (nástroj) píšeme s měkkým i – není vyjmenované slovo.','V dílně visí ostrá ___.'),
+  W('p','p','seň','í',3,'píseň píšeme s měkkým í – není vyjmenované slovo.','Zazpívali jsme veselou ___.'),
+  W('p','p','vo','i',3,'pivo píšeme s měkkým i – není vyjmenované slovo.','Táta si dal k obědu ___.'),
   /* ---- S ---- */
-  W('s','s','n','y','syn je vyjmenované slovo po S – tvrdé y.'),
-  W('s','s','tý','y','sytý je vyjmenované slovo po S – tvrdé y.'),
-  W('s','s','r','ý','sýr je vyjmenované slovo po S – píšeme ý.'),
-  W('s','s','rový','y','syrový je vyjmenované slovo po S – tvrdé y.'),
-  W('s','s','chravý','y','sychravý je vyjmenované slovo po S – tvrdé y.'),
-  W('s','s','kora','ý','sýkora je vyjmenované slovo po S – píšeme ý.'),
-  W('s','s','ček','ý','sýček je vyjmenované slovo po S – píšeme ý.'),
-  W('s','s','sel','y','sysel je vyjmenované slovo po S – tvrdé y.'),
-  W('s','s','čet','y','syčet je vyjmenované slovo po S – tvrdé y.'),
-  W('s','s','pat','y','sypat je vyjmenované slovo po S – tvrdé y.'),
-  W('s','s','pka','ý','sýpka je vyjmenované slovo po S – píšeme ý.'),
-  W('s','s','rka','i','sirka píšeme s měkkým i – není vyjmenované slovo.'),
-  W('s','s','lný','i','silný píšeme s měkkým i – není vyjmenované slovo.'),
-  W('s','s','rup','i','sirup píšeme s měkkým i – není vyjmenované slovo.'),
+  W('s','s','n','y',1,'syn je vyjmenované slovo po S – tvrdé y.','Sousedům se narodil ___.'),
+  W('s','s','tý','y',1,'sytý je vyjmenované slovo po S – tvrdé y.','Po obědě jsem úplně ___.'),
+  W('s','s','r','ý',1,'sýr je vyjmenované slovo po S – píšeme ý.','Na chleba si dám ___.'),
+  W('s','s','rový','y',2,'syrový je vyjmenované slovo po S – tvrdé y.','Maso ještě nejez, je ___.'),
+  W('s','s','chravý','y',2,'sychravý je vyjmenované slovo po S – tvrdé y.','Venku je mlhavý a ___ den.'),
+  W('s','s','kora','ý',1,'sýkora je vyjmenované slovo po S – píšeme ý.','Na krmítku sedí ___.'),
+  W('s','s','ček','ý',2,'sýček je vyjmenované slovo po S – píšeme ý.','V noci houká ___.'),
+  W('s','s','sel','y',2,'sysel je vyjmenované slovo po S – tvrdé y.','Na poli vykoukl ___.'),
+  W('s','s','čet','y',2,'syčet je vyjmenované slovo po S – tvrdé y.','Had začal zlostně ___.'),
+  W('s','s','pat','y',1,'sypat je vyjmenované slovo po S – tvrdé y.','Budu ptáčkům ___ zrní.'),
+  W('s','s','pka','ý',2,'sýpka je vyjmenované slovo po S – píšeme ý.','Za statkem stojí stará ___.'),
+  W('s','s','rka','i',3,'sirka píšeme s měkkým i – není vyjmenované slovo.','V krabičce zbyla jedna ___.'),
+  W('s','s','lný','i',3,'silný píšeme s měkkým i – není vyjmenované slovo.','Náš táta je hodně ___.'),
+  W('s','s','rup','i',3,'sirup píšeme s měkkým i – není vyjmenované slovo.','Do vody nalij malinový ___.'),
   /* ---- V ---- */
-  W('v','v','','y','vy (vy všichni) je vyjmenované slovo po V – tvrdé y.'),
-  W('v','v','soký','y','vysoký je vyjmenované slovo po V – tvrdé y.'),
-  W('v','v','ška','ý','výška (od vysoký) je vyjmenované slovo po V – píšeme ý.'),
-  W('v','v','t','ý','výt (vlk vyje) je vyjmenované slovo po V – ý. Pozor: vít = splétat.','V noci je slyšet vlky ___.'),
-  W('v','v','t','í','vít (splétat věnec) píšeme s měkkým í – není vyjmenované.','Budeme ___ věneček z kytek.'),
-  W('v','v','dra','y','vydra je vyjmenované slovo po V – tvrdé y.'),
-  W('v','v','r','ý','výr (velká sova) je vyjmenované slovo po V – ý. Pozor: vír = vodní.','___ velký je noční pták.'),
-  W('v','v','r','í','vír (kroužící voda) píšeme s měkkým í – není vyjmenované.','V řece se točil nebezpečný ___.'),
-  W('v','zv','kat','y','zvykat (zvyk) je vyjmenované slovo po V – tvrdé y.'),
-  W('v','zv','k','y','zvyk je vyjmenované slovo po V – tvrdé y.'),
-  W('v','žv','kat','ý','žvýkat je vyjmenované slovo po V – píšeme ý.'),
-  W('v','v','žle','y','vyžle je vyjmenované slovo po V – tvrdé y.'),
-  W('v','pov','k','y','povyk je vyjmenované slovo po V – tvrdé y.'),
-  W('v','v','datný','y','vydatný je vyjmenované slovo po V – tvrdé y.'),
-  W('v','v','let','ý','výlet – předpona vy-/vý- se vždy píše s tvrdým ý.'),
-  W('v','v','právět','y','vyprávět – předpona vy- se vždy píše s tvrdým y.'),
-  W('v','v','dět','i','vidět píšeme s měkkým i – není předpona vy- ani vyjmenované slovo.'),
-  W('v','v','tr','í','vítr (fouká venku) píšeme s měkkým í. Pozor: vír a výr!','Venku fouká studený ___.'),
-  W('v','v','la','í','víla (pohádková bytost) píšeme s měkkým í – není vyjmenované slovo.'),
+  W('v','v','','y',1,'vy (vy všichni) je vyjmenované slovo po V – tvrdé y.','Zítra ___ jdete první.'),
+  W('v','v','soký','y',1,'vysoký je vyjmenované slovo po V – tvrdé y.','Ten strom je hrozně ___.'),
+  W('v','v','ška','ý',2,'výška (od vysoký) je vyjmenované slovo po V – píšeme ý.','Ta ___ mě trochu děsí.'),
+  W('v','v','t','ý',3,'výt (vlk vyje) je vyjmenované slovo po V – ý. Pozor: vít = splétat.','V noci je slyšet vlky ___.'),
+  W('v','v','t','í',3,'vít (splétat věnec) píšeme s měkkým í – není vyjmenované.','Budeme ___ věneček z kytek.'),
+  W('v','v','dra','y',1,'vydra je vyjmenované slovo po V – tvrdé y.','V řece plave hnědá ___.'),
+  W('v','v','r','ý',3,'výr (velká sova) je vyjmenované slovo po V – ý. Pozor: vír = vodní.','V lese houká ___ velký.'),
+  W('v','v','r','í',3,'vír (kroužící voda) píšeme s měkkým í – není vyjmenované.','V řece se točil nebezpečný ___.'),
+  W('v','zv','kat','y',2,'zvykat (zvyk) je vyjmenované slovo po V – tvrdé y.','Musíš si ___ na školu.'),
+  W('v','zv','k','y',1,'zvyk je vyjmenované slovo po V – tvrdé y.','Mýt si ruce je dobrý ___.'),
+  W('v','žv','kat','ý',1,'žvýkat je vyjmenované slovo po V – píšeme ý.','Nesmíš ___ s otevřenou pusou.'),
+  W('v','v','žle','y',2,'vyžle je vyjmenované slovo po V – tvrdé y.','Ten pejsek je hubené ___.'),
+  W('v','pov','k','y',2,'povyk je vyjmenované slovo po V – tvrdé y.','Na dvoře byl velký ___.'),
+  W('v','v','datný','y',2,'vydatný je vyjmenované slovo po V – tvrdé y.','K snídani měli ___ oběd.'),
+  W('v','v','let','ý',1,'výlet – předpona vy-/vý- se vždy píše s tvrdým ý.','V neděli pojedeme na ___.'),
+  W('v','v','právět','y',1,'vyprávět – předpona vy- se vždy píše s tvrdým y.','Babička nám bude ___ pohádku.'),
+  W('v','v','dět','i',3,'vidět píšeme s měkkým i – není předpona vy- ani vyjmenované slovo.','Ze skály je ___ celé město.'),
+  W('v','v','tr','í',3,'vítr (fouká venku) píšeme s měkkým í. Pozor: vír a výr!','Venku fouká studený ___.'),
+  W('v','v','la','í',3,'víla (pohádková bytost) píšeme s měkkým í – není vyjmenované slovo.','V pohádce tančí krásná ___.'),
   /* ---- Z ---- */
-  W('z','brz','','y','brzy je vyjmenované slovo po Z – tvrdé y.'),
-  W('z','jaz','k','y','jazyk je vyjmenované slovo po Z – tvrdé y.'),
-  W('z','jaz','ček','ý','jazýček (od jazyk) je vyjmenované slovo po Z – píšeme ý.'),
-  W('z','naz','vat','ý','nazývat je vyjmenované slovo po Z – píšeme ý.'),
-  W('z','vyz','vat','ý','vyzývat (od nazývat) je vyjmenované slovo po Z – píšeme ý.'),
-  W('z','oz','vat','ý','ozývat se (od nazývat) je vyjmenované slovo po Z – píšeme ý.'),
-  W('z','z','vat','í','zívat (když jsme unavení) píšeme s měkkým í. Pozor: nazývat má y!','Když jsem unavená, musím ___.'),
-  W('z','z','ma','i','zima píšeme s měkkým i – není vyjmenované slovo.'),
-  W('z','z','skat','í','získat (od zisk) píšeme s měkkým í – není vyjmenované slovo.','Chci ___ novou medaili.')
+  W('z','brz','','y',1,'brzy je vyjmenované slovo po Z – tvrdé y.','Ráno vstávám velmi ___.'),
+  W('z','jaz','k','y',1,'jazyk je vyjmenované slovo po Z – tvrdé y.','Vyplázl na mě ___.'),
+  W('z','jaz','ček','ý',2,'jazýček (od jazyk) je vyjmenované slovo po Z – píšeme ý.','U boty se rozbil ___.'),
+  W('z','naz','vat','ý',2,'nazývat je vyjmenované slovo po Z – píšeme ý.','Jak se to bude ___?'),
+  W('z','vyz','vat','ý',2,'vyzývat (od nazývat) je vyjmenované slovo po Z – píšeme ý.','Nebudu tě ___ k závodu.'),
+  W('z','oz','vat','ý',2,'ozývat se (od nazývat) je vyjmenované slovo po Z – píšeme ý.','Z lesa se bude ___ echo.'),
+  W('z','z','vat','í',3,'zívat (když jsme unavení) píšeme s měkkým í. Pozor: nazývat má y!','Když jsem unavená, musím ___.'),
+  W('z','z','ma','i',3,'zima píšeme s měkkým i – není vyjmenované slovo.','Přišla mrazivá ___.'),
+  W('z','z','skat','í',3,'získat (od zisk) píšeme s měkkým í – není vyjmenované slovo.','Chci ___ novou medaili.')
 ];
+// gaps that render identically for >1 word (homophones) need context even in "Slova" mode
+var AMBIG={};
+(function(){ var seen={}; var i,g;
+  for(i=0;i<BANK.length;i++){ g=BANK[i].row+':'+BANK[i].pre+'_'+BANK[i].post; seen[g]=(seen[g]||0)+1; }
+  for(i=0;i<BANK.length;i++){ g=BANK[i].row+':'+BANK[i].pre+'_'+BANK[i].post; if(seen[g]>1) AMBIG[BANK[i].id]=true; }
+})();
+function needsContext(w){ return !!AMBIG[w.id]; }
 function wordStat(id){ return DB.words[id]||{seen:0,correct:0,wrong:0}; }
 function optionsFor(ans){ return (ans==='í'||ans==='ý')? ['í','ý'] : ['i','y']; }
 function pickWord(avoidId){
-  var rows=DB.settings.activeRows; var cands=[];
-  for(var i=0;i<BANK.length;i++){ var w=BANK[i];
-    if(rows.indexOf(w.row)<0) continue; if(w.id===avoidId) continue;
-    var st=wordStat(w.id); var att=st.correct+st.wrong; var err=att? st.wrong/att : 0;
-    var wt=1+2*err; if(att===0) wt*=1.3;
-    cands.push({w:w, weight:wt});
+  var rows=DB.settings.activeRows;
+  var maxLvl=(DB.settings.setup&&DB.settings.setup.czechLevel)||3;
+  function build(lvlCap){
+    var out=[];
+    for(var i=0;i<BANK.length;i++){ var w=BANK[i];
+      if(rows.indexOf(w.row)<0) continue; if(w.level>lvlCap) continue; if(w.id===avoidId) continue;
+      var st=wordStat(w.id); var att=st.correct+st.wrong; var err=att? st.wrong/att : 0;
+      var wt=1+2*err; if(att===0) wt*=1.3;
+      out.push({w:w, weight:wt});
+    }
+    return out;
   }
+  var cands=build(maxLvl);
+  if(!cands.length) cands=build(3);        // level too low for active rows -> relax
   if(!cands.length) return null;
   // weightedPick expects .w
   var mapped=cands.map(function(c){ return {w:c.weight, item:c.w}; });
@@ -525,7 +579,9 @@ var G={
 };
 
 function topicEnabled(){
-  return { math: DB.settings.activeTables.length>0, czech: DB.settings.activeRows.length>0 };
+  var su=DB.settings.setup;
+  return { math: su.mathOn && DB.settings.activeTables.length>0,
+           czech: su.czechOn && DB.settings.activeRows.length>0 };
 }
 
 function newRound(){
@@ -631,6 +687,7 @@ function slotsHTML(grown,goal){
 
 function render(){
   if(G.screen==='garden') renderGarden();
+  else if(G.screen==='setup') renderSetup();
   else if(G.screen==='round') renderRound();
   else if(G.screen==='summary') renderSummary();
 }
@@ -670,7 +727,95 @@ function renderGarden(){
   document.getElementById('gearBtn').addEventListener('click', openGate);
 }
 
-function startRoundFlow(){ markActivity(); G.round=newRound(); G.screen='round'; startQuestion(); }
+function startRoundFlow(){ markActivity(); G.setupTmp=clone(DB.settings.setup); G.screen='setup'; renderSetup(); }
+function beginRound(){ markActivity(); G.round=newRound(); G.screen='round'; startQuestion(); }
+
+function mathReadout(f){ return 'Počítáme do '+f+'<small>např. '+f+' × '+(f>1?f-1:1)+' = '+(f*(f>1?f-1:1))+'</small>'; }
+function czechReadout(l){
+  var t = l<=1?'Lehké':(l>=3?'Těžké':'Střední');
+  var d = l<=1?'základní slova':(l>=3?'i chytáky a dvojice slov':'i odvozená slova');
+  return t+'<small>'+d+'</small>';
+}
+function renderSetup(){
+  G.screen='setup';
+  var su=G.setupTmp || (G.setupTmp=clone(DB.settings.setup));
+  var mathAvail=DB.settings.activeTables.length>0;
+  var czechAvail=DB.settings.activeRows.length>0;
+  if(!mathAvail) su.mathOn=false; if(!czechAvail) su.czechOn=false;
+
+  var mathCard = !mathAvail ? '' : ''+
+    '<div class="tcard'+(su.mathOn?'':' off')+'" id="mathCard">'+
+      '<div class="th"><div class="tt"><span class="ic">✕</span>Počítání</div>'+
+        '<button class="switch" id="mathSw" aria-pressed="'+(su.mathOn?'true':'false')+'" aria-label="Zapnout počítání"></button></div>'+
+      '<div class="readout" id="mathRead">'+mathReadout(su.maxFactor)+'</div>'+
+      '<input class="slider" id="mathSlider" type="range" min="3" max="10" step="1" value="'+su.maxFactor+'"'+(su.mathOn?'':' disabled')+'>'+
+      '<div class="slabels"><span>do 3</span><span>do 10</span></div>'+
+    '</div>';
+
+  var czechCard = !czechAvail ? '' : ''+
+    '<div class="tcard'+(su.czechOn?'':' off')+'" id="czCard">'+
+      '<div class="th"><div class="tt"><span class="ic">✎</span>Vyjmenovaná slova</div>'+
+        '<button class="switch" id="czSw" aria-pressed="'+(su.czechOn?'true':'false')+'" aria-label="Zapnout vyjmenovaná slova"></button></div>'+
+      '<div class="formseg" id="formSeg">'+
+        '<button data-f="slova" aria-pressed="'+(su.czechForm==='slova'?'true':'false')+'">Slova</button>'+
+        '<button data-f="vety" aria-pressed="'+(su.czechForm==='vety'?'true':'false')+'">Věty</button>'+
+      '</div>'+
+      '<div class="readout" id="czRead">'+czechReadout(su.czechLevel)+'</div>'+
+      '<input class="slider" id="czSlider" type="range" min="1" max="3" step="1" value="'+su.czechLevel+'"'+(su.czechOn?'':' disabled')+'>'+
+      '<div class="slabels"><span>Lehké</span><span>Těžké</span></div>'+
+    '</div>';
+
+  var html=''+
+  '<div class="screen rise" style="background:linear-gradient(180deg,#fdf6e3 0%,#f7edcf 55%,#eee2bd 100%);">'+
+    '<div class="meadow"></div>'+
+    '<div class="setupscroll">'+
+      '<div class="setuptitle">'+
+        '<div class="bubble" style="font-size:clamp(20px,3.2vmin,28px); padding:14px 26px;">Co dnes vypěstujeme?<div class="tail"></div></div>'+
+        '<div style="width:120px; height:126px; animation:owlBreathe 4.5s ease-in-out infinite; transform-origin:center bottom;">'+owlSVG()+'</div>'+
+      '</div>'+
+      '<div class="setrow">'+mathCard+czechCard+'</div>'+
+      '<div class="setupwarn" id="setupWarn" style="display:none;">Vyber aspoň jednu zahrádku 🙂</div>'+
+      '<div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:4px;">'+
+        '<button class="btn2 ghost" id="setupBack">Zpět</button>'+
+        '<button class="cta small" id="setupGo">Do zahrady 🌱</button>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+  app.innerHTML=html;
+  setOwlMood(app,'normal');
+
+  function anyOn(){ return (su.mathOn && mathAvail) || (su.czechOn && czechAvail); }
+  function refresh(){
+    var go=document.getElementById('setupGo');
+    var warn=document.getElementById('setupWarn');
+    if(anyOn()){ go.disabled=false; go.style.opacity='1'; go.style.pointerEvents='auto'; warn.style.display='none'; }
+    else { go.disabled=true; go.style.opacity='.4'; go.style.pointerEvents='none'; warn.style.display='block'; }
+  }
+  function cardToggle(cardId,swId,sliderId,key){
+    var sw=document.getElementById(swId); if(!sw) return;
+    sw.addEventListener('click', function(){
+      su[key]=!su[key]; sw.setAttribute('aria-pressed', su[key]?'true':'false');
+      var card=document.getElementById(cardId); if(card) card.classList.toggle('off', !su[key]);
+      var sl=document.getElementById(sliderId); if(sl) sl.disabled=!su[key];
+      var seg=card&&card.querySelector('.formseg'); // czech only
+      refresh();
+    });
+  }
+  cardToggle('mathCard','mathSw','mathSlider','mathOn');
+  cardToggle('czCard','czSw','czSlider','czechOn');
+  var ms=document.getElementById('mathSlider');
+  if(ms) ms.addEventListener('input', function(){ su.maxFactor=parseInt(ms.value,10); document.getElementById('mathRead').innerHTML=mathReadout(su.maxFactor); });
+  var cs=document.getElementById('czSlider');
+  if(cs) cs.addEventListener('input', function(){ su.czechLevel=parseInt(cs.value,10); document.getElementById('czRead').innerHTML=czechReadout(su.czechLevel); });
+  var seg=document.getElementById('formSeg');
+  if(seg) seg.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
+    su.czechForm=b.getAttribute('data-f');
+    seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', x.getAttribute('data-f')===su.czechForm?'true':'false'); });
+  });
+  document.getElementById('setupBack').addEventListener('click', function(){ G.screen='garden'; render(); });
+  document.getElementById('setupGo').addEventListener('click', function(){ if(!anyOn()) return; DB.settings.setup=clone(su); saveDB(); beginRound(); });
+  refresh();
+}
 
 function renderRound(){
   G.screen='round';
@@ -711,11 +856,16 @@ function renderRound(){
     }
   } else {
     var w=it.w;
-    var gapWord='<span>'+esc(w.pre)+'</span><span class="gap"></span><span>'+esc(w.post)+'</span>';
-    questionHTML='<div class="qbig" style="display:flex; align-items:center; justify-content:center;">'+gapWord+'</div>';
-    if(w.sentence){
+    var form=(DB.settings.setup&&DB.settings.setup.czechForm)||'slova';
+    var inlineGap='<span class="wgap">'+esc(w.pre)+'<span class="gap"></span>'+esc(w.post)+'</span>';
+    if(form==='vety' && w.sentence){
+      questionHTML='<div class="qsent">'+w.sentence.replace('___', inlineGap)+'</div>';
+    } else {
+      questionHTML='<div class="qbig" style="display:flex; align-items:center; justify-content:center;">'+inlineGap+'</div>';
+      if(needsContext(w) && w.sentence){
       var filled=w.sentence.replace('___','<b>'+esc(w.pre)+' _ '+esc(w.post)+'</b>');
       questionHTML+='<div class="qsentence">'+filled+'</div>';
+      }
     }
     if(R.feedback==='correct'){
       answersHTML=praiseHTML(R);

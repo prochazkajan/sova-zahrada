@@ -49,7 +49,9 @@
   .owl-cool-g{animation:owlGlasses 1.5s cubic-bezier(.34,1.3,.6,1) both;}
 
   /* ---------- screens ---------- */
-  .screen{position:absolute; inset:0;}
+  .screen{position:absolute; inset:0; transition:filter .7s ease;}
+  /* wait-lock: the whole screen calmly greys out — "nespěchej, ještě neklikej" */
+  .screen.waiting{filter:grayscale(.72) brightness(.95);}
   .rise{animation:riseIn .6s ease both;}
 
   /* garden / summary shared bg pieces */
@@ -220,7 +222,7 @@
 </head>
 <body>
 <div id="app"></div>
-<div class="ver">v0.6</div>
+<div class="ver">v0.7</div>
 
 <script>
 "use strict";
@@ -684,7 +686,7 @@ function startQuestion(){
   setLocked(true);
   renderRound();
   clearTimeout(G._lockT);
-  G._lockT=setTimeout(function(){ setLocked(false); var el=app.querySelector('.answers'); if(el) el.classList.remove('locked'); var owlb=app.querySelector('.owlbox'); if(owlb) owlb.classList.remove('think'); var h=app.querySelector('.hint'); if(h) h.textContent='Vyber, co ti přijde správné'; }, 3000);
+  G._lockT=setTimeout(function(){ setLocked(false); var sc=app.querySelector('.screen'); if(sc) sc.classList.remove('waiting'); var el=app.querySelector('.answers'); if(el) el.classList.remove('locked'); var owlb=app.querySelector('.owlbox'); if(owlb) owlb.classList.remove('think'); var h=app.querySelector('.hint'); if(h) h.textContent='Vyber, co ti přijde správné'; }, 3000);
 }
 function setLocked(v){ G.locked=v; }
 
@@ -948,7 +950,7 @@ function renderRound(){
   }
 
   var html=''+
-  '<div class="screen rise" style="background:linear-gradient(180deg,#fdf7ea 0%,#f6edd4 100%); display:flex; flex-direction:column;">'+
+  '<div class="screen rise'+(G.locked?' waiting':'')+'" style="background:linear-gradient(180deg,#fdf7ea 0%,#f6edd4 100%); display:flex; flex-direction:column;">'+
     head+
     '<div class="qwrap">'+
       questionHTML+

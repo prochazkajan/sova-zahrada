@@ -1,6 +1,13 @@
 # Zahrada moudré sovy
-Educational browser game in Czech for a 9-year-old girl (3rd grade):
-multiplication tables 1-10 + vyjmenovaná slova (all rows b,l,m,p,s,v,z).
+Educational browser game in Czech for a 9-year-old girl (3rd grade). Three modes:
+- "Počítání a čeština" — multiplication tables 1-10 + vyjmenovaná slova (all rows b,l,m,p,s,v,z), mixed in one round loop.
+- "Stavba slova" — word building (skládačka / rozbor / spojovačka).
+- "Slovní druhy" — sort a word into 1 of 10 parts-of-speech "záhony". Own screen
+  (enterDruhy/renderDruhy/druhyTap); word bank = DRUHY_POOL ({w,t}, t ∈ pod/prid/
+  zaj/cis/slo/pris/pred/spoj/cast/cit), error-weighted + recent-exclusion via
+  DB.druhystats/DB.druhyRecent. Round = dailyGoal() words, then completion screen.
+All modes share the flower economy shown in the top bar (topBarHTML: MOJE LOUKA
+count · 3 per-mode flower chips · DO OSLAVY x/goal progress).
 
 ## Hard rules
 - Single self-contained index.html (inline CSS/JS), no build tools, no dependencies.

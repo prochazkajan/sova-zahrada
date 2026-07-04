@@ -90,12 +90,6 @@
   .daypanel .big{font-size:44px; font-weight:800; line-height:1;}
   .daypanel .sub{font-size:15px; font-weight:700; color:#c2b087;}
 
-  /* round header (slots) */
-  .rhead{width:100%; display:flex; flex-direction:column; align-items:center; gap:10px; padding:18px 12px 4px;}
-  .rhead .cap{font-size:20px; font-weight:800; color:var(--muted2); letter-spacing:.5px;}
-  .slots{display:flex; gap:7px; flex-wrap:wrap; justify-content:center; max-width:680px;}
-  .slot{width:38px; height:42px; display:flex; align-items:center; justify-content:center;}
-
   /* question area */
   .qwrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px; padding:6px 18px 30px; min-height:0;}
   .qbig{font-size:clamp(52px,10vmin,116px); font-weight:800; line-height:1; text-align:center;}
@@ -305,11 +299,57 @@
   .bpanel{display:flex; flex-direction:column; align-items:center; gap:14px; background:#fbf3e4; border:3px solid var(--border);
     border-radius:26px; padding:20px 30px; animation:riseIn .5s ease both; max-width:min(640px,94vw);}
   .bpanel .pt{font-size:27px; font-weight:800; color:var(--green-ink); text-align:center;}
+
+  /* ---------- shared flower-counting top bar (all modes) ---------- */
+  .tbfix{position:absolute; top:0; left:0; right:0; z-index:50;}
+  .topbar{flex:0 0 auto; width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px 16px;
+    padding:9px 18px; background:rgba(255,253,245,.9); border-bottom:2px solid var(--border); flex-wrap:wrap;}
+  .tb-louka{display:flex; align-items:center; gap:8px;}
+  .tb-louka-txt{display:flex; flex-direction:column; line-height:1.05;}
+  .tb-lbl{font-size:11px; font-weight:800; letter-spacing:.8px; color:#b7a582;}
+  .tb-kyt{font-size:19px; font-weight:800; color:var(--ink);}
+  .tb-chips{display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;}
+  .tb-chip{display:flex; align-items:center; gap:5px; padding:4px 12px 4px 8px; border:2px solid; border-radius:22px;}
+  .tb-chip span{font-size:19px; font-weight:800;}
+  .tb-osl{display:flex; align-items:center; gap:9px;}
+  .tb-osl-lbl{font-size:11px; font-weight:800; letter-spacing:.8px; color:#b7a582;}
+  .tb-bar{position:relative; width:104px; height:14px; background:#f0e3c4; border:1px solid #e6d3a6; border-radius:8px; overflow:hidden;}
+  .tb-fill{position:absolute; top:0; left:0; bottom:0; background:linear-gradient(90deg,#f3c53f,#86bf67); border-radius:8px; transition:width .5s cubic-bezier(.34,1.2,.64,1);}
+  .tb-osl-num{font-size:16px; font-weight:800; color:#7a6a45; min-width:44px; text-align:right;}
+  @media (max-width:600px){ .tb-lbl,.tb-osl-lbl{display:none;} .tb-bar{width:70px;} .tb-kyt{font-size:17px;} }
+
+  /* ---------- slovní druhy ---------- */
+  .cta.druhy{display:inline-flex; align-items:center; justify-content:center; gap:12px;
+    background:#e0917c; box-shadow:0 16px 30px -12px rgba(190,110,80,.5);}
+  .cta.druhy:hover{box-shadow:0 24px 38px -12px rgba(190,110,80,.58);}
+  .druhy-dots{display:flex; gap:8px; justify-content:center; padding:2px 12px 6px; flex-wrap:wrap;}
+  .druhy-dot{width:12px; height:12px; border-radius:50%;}
+  .druhy-play{flex:1; display:flex; flex-direction:column; align-items:center; gap:16px; padding:8px 16px 34px; overflow-y:auto; min-height:0;}
+  .druhy-top{display:flex; align-items:center; justify-content:center; gap:22px; flex-wrap:wrap;}
+  .druhy-owl{width:96px; height:100px; transform-origin:center bottom; animation:owlBreathe 4.5s ease-in-out infinite;}
+  .druhy-owl.think{animation:owlThink 2.6s ease-in-out infinite;}
+  .druhy-wordcol{display:flex; flex-direction:column; align-items:center; gap:7px;}
+  .druhy-word{min-width:170px; padding:12px 40px; background:var(--cream); border:4px solid var(--border); border-radius:26px;
+    box-shadow:0 14px 30px -16px rgba(90,70,40,.45); font-size:clamp(38px,6.5vmin,58px); font-weight:800; color:var(--ink); text-align:center;}
+  .druhy-hint{font-size:clamp(16px,2.6vmin,20px); font-weight:700; color:var(--muted); text-align:center; min-height:24px; animation:hintFade 3.2s ease-in-out infinite;}
+  .druhy-beds{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,168px)); gap:11px; justify-content:center; width:min(920px,100%);}
+  .druhy-beds.locked{opacity:.9;}
+  .druhy-bed{display:flex; flex-direction:column; align-items:center; gap:3px; padding:11px 9px 9px; border:3px solid; border-radius:20px;
+    cursor:pointer; transition:transform .2s ease, box-shadow .2s ease;}
+  .druhy-bed:hover{transform:translateY(-3px);}
+  .druhy-beds.locked .druhy-bed{cursor:not-allowed; pointer-events:none;}
+  .druhy-num{width:26px; height:26px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; color:#fff; border-radius:50%;}
+  .druhy-title{font-size:17px; font-weight:800; text-align:center; line-height:1.05;}
+  .druhy-q{font-size:12.5px; font-weight:800; opacity:.72; text-align:center;}
+  .druhy-flowers{display:flex; flex-wrap:wrap; gap:2px; justify-content:center; align-items:flex-end; min-height:20px; margin-top:1px;}
+  .druhy-wrong{font-size:clamp(17px,2.6vmin,20px); font-weight:800; color:#c88a4a; text-align:center; max-width:560px; line-height:1.4; animation:nudge .5s ease both;}
+  .druhy-done{flex:1; display:flex; align-items:center; justify-content:center; padding:20px;}
+  .druhy-donesub{font-size:18px; font-weight:700; color:var(--muted2); text-align:center; max-width:440px; line-height:1.4;}
 </style>
 </head>
 <body>
 <div id="app"></div>
-<div class="ver">v0.12</div>
+<div class="ver">v0.13</div>
 
 <script>
 "use strict";
@@ -328,9 +368,10 @@ var DEFAULTS={
   garden:{ totalFlowers:0 },
   facts:{}, words:{},
   rozstats:{}, rozRecent:[], spojRecent:[], lastSkladFam:null,
+  druhystats:{}, druhyRecent:[],
   daily:{ date:'', playMs:0, rounds:0,
-          flowers:{ total:0, math:0, czech:0, build:0 },
-          answers:{ math:{ok:0,bad:0}, czech:{ok:0,bad:0} },
+          flowers:{ total:0, math:0, czech:0, build:0, druhy:0 },
+          answers:{ math:{ok:0,bad:0}, czech:{ok:0,bad:0}, druhy:{ok:0,bad:0} },
           build:{ sklad:{found:[], hints:0, done:false, everDone:false, fam:null},
                   rozbor:{idx:0, wrong:0, done:false, everDone:false, set:[]},
                   spoj:{matched:[], wrong:0, done:false, everDone:false, set:[], fam:null} } },
@@ -357,6 +398,8 @@ function loadDB(){
       DB.garden=Object.assign(clone(DEFAULTS.garden), d.garden||{});
       DB.facts=d.facts||{}; DB.words=d.words||{};
       DB.rozstats=d.rozstats||{};
+      DB.druhystats=d.druhystats||{};
+      DB.druhyRecent=Array.isArray(d.druhyRecent)? d.druhyRecent.slice(-18) : [];
       DB.rozRecent=Array.isArray(d.rozRecent)? d.rozRecent.slice(-15) : [];
       DB.spojRecent=Array.isArray(d.spojRecent)? d.spojRecent.slice(-15) : [];
       DB.lastSkladFam=d.lastSkladFam||null;
@@ -365,7 +408,7 @@ function loadDB(){
       DB.daily=Object.assign(clone(DEFAULTS.daily), dd);
       DB.daily.flowers=Object.assign(clone(DEFAULTS.daily.flowers), dd.flowers||{});
       DB.daily.answers=clone(DEFAULTS.daily.answers);
-      if(dd.answers){ ['math','czech'].forEach(function(k){ DB.daily.answers[k]=Object.assign(clone(DEFAULTS.daily.answers[k]), dd.answers[k]||{}); }); }
+      if(dd.answers){ ['math','czech','druhy'].forEach(function(k){ DB.daily.answers[k]=Object.assign(clone(DEFAULTS.daily.answers[k]), dd.answers[k]||{}); }); }
       DB.daily.build=clone(DEFAULTS.daily.build);
       if(dd.build){ ['sklad','rozbor','spoj'].forEach(function(k){ DB.daily.build[k]=Object.assign(clone(DEFAULTS.daily.build[k]), dd.build[k]||{}); }); }
       if(!Array.isArray(DB.daily.build.sklad.found)) DB.daily.build.sklad.found=[];
@@ -477,14 +520,6 @@ function owlSVG(){
 /* ---------------- flower svgs ---------------- */
 var FLOWER_COLORS=['#f2b6c6','#cbb8e8','#f6e08a','#f4b393','#fdeef2'];
 var FLOWER_CENTERS=['#f6d17a','#f6d17a','#eaa93f','#f6d17a','#f2b6c6'];
-function slotFlower(){ return '<svg width="32" height="36" viewBox="0 0 40 44"><g transform="translate(20 18)">'+
-  '<circle cx="0" cy="-9" r="7.5" fill="#f2b6c6"></circle><circle cx="9" cy="-1" r="7.5" fill="#f2b6c6"></circle>'+
-  '<circle cx="5.5" cy="8" r="7.5" fill="#f2b6c6"></circle><circle cx="-5.5" cy="8" r="7.5" fill="#f2b6c6"></circle>'+
-  '<circle cx="-9" cy="-1" r="7.5" fill="#f2b6c6"></circle><circle cx="0" cy="0" r="5" fill="#f6d17a"></circle></g></svg>'; }
-function slotSeed(){ return '<svg width="32" height="36" viewBox="0 0 40 44">'+
-  '<ellipse cx="20" cy="32" rx="12" ry="6" fill="#e2d1a6"></ellipse>'+
-  '<path d="M20 32 C20 24 20 22 20 18" stroke="#bcd89a" stroke-width="3" fill="none" stroke-linecap="round"></path>'+
-  '<circle cx="20" cy="16" r="3.5" fill="#bcd89a"></circle></svg>'; }
 function bigSprout(){ return '<svg width="96" height="130" viewBox="0 0 96 130" style="animation:sprout 1s cubic-bezier(.34,1.4,.5,1) both; transform-origin:center bottom;">'+
   '<rect x="44.5" y="52" width="7" height="72" rx="3.5" fill="#7fa86a"></rect>'+
   '<ellipse cx="30" cy="90" rx="14" ry="7" fill="#8fbd76" transform="rotate(28 30 90)"></ellipse>'+
@@ -492,6 +527,43 @@ function bigSprout(){ return '<svg width="96" height="130" viewBox="0 0 96 130" 
   '<g transform="translate(48 34)"><circle cx="0" cy="-20" r="15" fill="#f2b6c6"></circle><circle cx="19" cy="-6" r="15" fill="#f2b6c6"></circle>'+
   '<circle cx="12" cy="16" r="15" fill="#f2b6c6"></circle><circle cx="-12" cy="16" r="15" fill="#f2b6c6"></circle>'+
   '<circle cx="-19" cy="-6" r="15" fill="#f2b6c6"></circle><circle cx="0" cy="-2" r="11" fill="#f6d17a"></circle></g></svg>'; }
+
+/* --- shared flower-counting top bar (all modes) --- */
+function chipFlower(petal,center,size){
+  var h=Math.round(size*1.09);
+  return '<svg width="'+size+'" height="'+h+'" viewBox="0 0 40 44"><g transform="translate(20 22)">'+
+    '<circle cx="0" cy="-9" r="7.5" fill="'+petal+'"></circle><circle cx="9" cy="-1" r="7.5" fill="'+petal+'"></circle>'+
+    '<circle cx="5.5" cy="8" r="7.5" fill="'+petal+'"></circle><circle cx="-5.5" cy="8" r="7.5" fill="'+petal+'"></circle>'+
+    '<circle cx="-9" cy="-1" r="7.5" fill="'+petal+'"></circle><circle cx="0" cy="0" r="5" fill="'+center+'"></circle></g></svg>';
+}
+function kytickaWord(n){ return n===1 ? 'kytička' : (n>=2 && n<=4 ? 'kytičky' : 'kytiček'); }
+function tbChip(petal,bg,bd,fg,count){
+  return '<div class="tb-chip" style="background:'+bg+'; border-color:'+bd+';">'+chipFlower(petal,'#f6d17a',22)+
+    '<span style="color:'+fg+';">'+count+'</span></div>';
+}
+function topBarHTML(){
+  var f=DB.daily.flowers||{};
+  var total=f.total||0, goal=dailyGoal();
+  var ces=(f.math||0)+(f.czech||0), stavba=f.build||0, druhy=f.druhy||0;
+  var prog=Math.min(total,goal), pct=goal>0?Math.round(prog/goal*100):0;
+  return ''+
+  '<div class="topbar">'+
+    '<div class="tb-louka">'+chipFlower('#f2b6c6','#f6d17a',26)+
+      '<div class="tb-louka-txt"><span class="tb-lbl">MOJE LOUKA</span>'+
+        '<span class="tb-kyt">'+total+' '+kytickaWord(total)+'</span></div>'+
+    '</div>'+
+    '<div class="tb-chips">'+
+      tbChip('#f3c53f','#fdf3d0','#e8cf8f','#b9892b',ces)+
+      tbChip('#bfa2e8','#efe6fb','#c9b3ef','#7a5bc0',stavba)+
+      tbChip('#ef9c82','#fbe6dd','#f0c3a6','#c07a4f',druhy)+
+    '</div>'+
+    '<div class="tb-osl">'+
+      '<span class="tb-osl-lbl">DO OSLAVY</span>'+
+      '<div class="tb-bar"><div class="tb-fill" style="width:'+pct+'%;"></div></div>'+
+      '<span class="tb-osl-num">'+prog+'/'+goal+'</span>'+
+    '</div>'+
+  '</div>';
+}
 
 // deterministic pseudo-random for garden layout
 function seeded(i){ var x=Math.sin(i*127.1+ i*i*0.113)*43758.5453; return x-Math.floor(x); }
@@ -924,8 +996,9 @@ var app=document.getElementById('app');
 var G={
   screen:'garden',
   round:null,      // active round object
+  druhy:null,      // active slovní-druhy session
   locked:false,
-  _lockT:null, _idleT:null, _lastAct:Date.now(), _idle:false, _roundStart:0
+  _lockT:null, _advT:null, _idleT:null, _lastAct:Date.now(), _idle:false, _roundStart:0, _druhyStart:0
 };
 
 function topicEnabled(){
@@ -1025,10 +1098,10 @@ function endRound(){
 }
 
 /* ---------------- idle dozing ---------------- */
-function markActivity(){ G._lastAct=Date.now(); if(G._idle){ G._idle=false; if(G.screen==='garden'||G.screen==='round'||G.screen==='build') render(); } }
+function markActivity(){ G._lastAct=Date.now(); if(G._idle){ G._idle=false; if(G.screen==='garden'||G.screen==='round'||G.screen==='build'||G.screen==='druhy') render(); } }
 function checkIdle(){
   var idle = Date.now()-G._lastAct > 60000;
-  if(idle!==G._idle){ G._idle=idle; if(G.screen==='garden'||G.screen==='round'||G.screen==='build') render(); }
+  if(idle!==G._idle){ G._idle=idle; if(G.screen==='garden'||G.screen==='round'||G.screen==='build'||G.screen==='druhy') render(); }
 }
 window.addEventListener('pointerdown', markActivity, true);
 window.addEventListener('keydown', markActivity, true);
@@ -1037,17 +1110,12 @@ setInterval(checkIdle, 1000);
 /* ---------------- rendering ---------------- */
 function setOwlMood(scope, mood){ var o=(scope||app).querySelector('.owl'); if(o) o.setAttribute('data-mood',mood); }
 
-function slotsHTML(grown,goal){
-  var h='';
-  for(var i=0;i<goal;i++){ h+='<div class="slot">'+(i<grown?slotFlower():slotSeed())+'</div>'; }
-  return h;
-}
-
 function render(){
   if(G.screen==='garden') renderGarden();
   else if(G.screen==='setup') renderSetup();
   else if(G.screen==='round') renderRound();
   else if(G.screen==='build') renderBuild();
+  else if(G.screen==='druhy') renderDruhy();
   else if(G.screen==='summary') renderSummary();
 }
 
@@ -1070,10 +1138,11 @@ function renderGarden(){
     '<div class="pollen" style="right:20%; top:30%; width:10px; height:10px; background:#f4d38a; animation:pollen 11s ease-in-out infinite 1s;"></div>'+
     '<div class="pollen" style="left:40%; top:14%; width:12px; height:12px; background:#f6e6a4; animation:pollen 10s ease-in-out infinite .5s;"></div>'+
     gardenSVG()+
-    '<button class="gear" id="gearBtn" aria-label="Nastavení pro rodiče">'+
+    '<div class="tbfix">'+topBarHTML()+'</div>'+
+    '<button class="gear" id="gearBtn" aria-label="Nastavení pro rodiče" style="top:74px;">'+
       '<svg width="28" height="28" viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#b09a6c" stroke-width="5" stroke-dasharray="4 4.3"></circle><circle cx="20" cy="20" r="4.5" fill="#b09a6c"></circle></svg>'+
     '</button>'+
-    '<div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:6px; z-index:30; padding:34px 22px; overflow-y:auto;">'+
+    '<div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:6px; z-index:30; padding:86px 22px 34px; overflow-y:auto;">'+
       '<div class="bubble">'+esc(bubble)+'<div class="tail"></div></div>'+
       '<div style="width:190px; height:200px; animation:owlBreathe 4.5s ease-in-out infinite; transform-origin:center bottom; margin-top:8px;">'+owlSVG()+'</div>'+
       '<div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:16px; justify-content:center;">'+
@@ -1081,6 +1150,13 @@ function renderGarden(){
         '<button class="cta build" id="buildBtn">'+
           '<svg width="28" height="28" viewBox="0 0 40 40" style="flex:none;"><rect x="3" y="14" width="11" height="12" rx="3" fill="#efe4fb"></rect><rect x="15" y="14" width="11" height="12" rx="3" fill="#d8f0cf"></rect><rect x="27" y="14" width="10" height="12" rx="3" fill="#fcdcea"></rect></svg>'+
           'Stavba slova</button>'+
+        '<button class="cta druhy" id="druhyBtn">'+
+          '<svg width="34" height="18" viewBox="0 0 54 24" style="flex:none;">'+
+            '<g transform="translate(9 12) scale(.42)"><circle cx="0" cy="-9" r="7.5" fill="#c9b3ef"></circle><circle cx="9" cy="-1" r="7.5" fill="#c9b3ef"></circle><circle cx="5.5" cy="8" r="7.5" fill="#c9b3ef"></circle><circle cx="-5.5" cy="8" r="7.5" fill="#c9b3ef"></circle><circle cx="-9" cy="-1" r="7.5" fill="#c9b3ef"></circle><circle cx="0" cy="0" r="5" fill="#fff"></circle></g>'+
+            '<g transform="translate(27 12) scale(.5)"><circle cx="0" cy="-9" r="7.5" fill="#a9cf95"></circle><circle cx="9" cy="-1" r="7.5" fill="#a9cf95"></circle><circle cx="5.5" cy="8" r="7.5" fill="#a9cf95"></circle><circle cx="-5.5" cy="8" r="7.5" fill="#a9cf95"></circle><circle cx="-9" cy="-1" r="7.5" fill="#a9cf95"></circle><circle cx="0" cy="0" r="5" fill="#fff"></circle></g>'+
+            '<g transform="translate(45 12) scale(.42)"><circle cx="0" cy="-9" r="7.5" fill="#f0b3cc"></circle><circle cx="9" cy="-1" r="7.5" fill="#f0b3cc"></circle><circle cx="5.5" cy="8" r="7.5" fill="#f0b3cc"></circle><circle cx="-5.5" cy="8" r="7.5" fill="#f0b3cc"></circle><circle cx="-9" cy="-1" r="7.5" fill="#f0b3cc"></circle><circle cx="0" cy="0" r="5" fill="#fff"></circle></g>'+
+          '</svg>'+
+          'Slovní druhy</button>'+
       '</div>'+
       '<div class="daypanel">'+
         '<div class="lbl">DNES V ZAHRADĚ</div>'+
@@ -1093,6 +1169,7 @@ function renderGarden(){
   setOwlMood(app, sleeping?'sleepy':'normal');
   document.getElementById('playBtn').addEventListener('click', function(){ startRoundFlow(); });
   document.getElementById('buildBtn').addEventListener('click', function(){ enterBuild(); });
+  document.getElementById('druhyBtn').addEventListener('click', function(){ enterDruhy(); });
   document.getElementById('gearBtn').addEventListener('click', openGate);
 }
 
@@ -1137,7 +1214,8 @@ function renderSetup(){
   var html=''+
   '<div class="screen rise" style="background:linear-gradient(180deg,#fdf6e3 0%,#f7edcf 55%,#eee2bd 100%);">'+
     '<div class="meadow"></div>'+
-    '<div class="setupscroll">'+
+    '<div class="tbfix">'+topBarHTML()+'</div>'+
+    '<div class="setupscroll" style="padding-top:80px;">'+
       '<div class="setuptitle">'+
         '<div class="bubble" style="font-size:clamp(20px,3.2vmin,28px); padding:14px 26px;">Co dnes vypěstujeme?<div class="tail"></div></div>'+
         '<div style="width:120px; height:126px; animation:owlBreathe 4.5s ease-in-out infinite; transform-origin:center bottom;">'+owlSVG()+'</div>'+
@@ -1196,13 +1274,7 @@ function renderRound(){
   if(R.feedback==='correct'){ if(!R._celeb) R._celeb = Math.random()<0.5?'smile':'cool'; owlMood=R._celeb; }
   else { R._celeb=null; owlMood = sleeping?'sleepy':'normal'; }
 
-  var shown = R.freePlay ? R.grownThisRound : Math.min(((DB.daily.flowers&&DB.daily.flowers.total)||0), R.goal);
-  var capLabel = R.freePlay ? 'Kytičky pro louku' : 'Dnešní zahrada';
-  var head=''+
-    '<div class="rhead">'+
-      '<div class="cap">'+capLabel+' · '+shown+'/'+R.goal+'</div>'+
-      '<div class="slots">'+slotsHTML(shown,R.goal)+'</div>'+
-    '</div>';
+  var head=topBarHTML();
 
   var questionHTML, answersHTML='';
   var owlAnimClass = G.locked ? 'owlbox think' : 'owlbox';
@@ -1896,13 +1968,13 @@ function renderBuild(){
   G.screen='build';
   var v=G.bView||'hub';
   var titles={hub:'Stavba slova', sklad:'Skládačka', rozbor:'Rozbor slova', spoj:'Spojovačka'};
-  var goal=dailyGoal(), tot=(DB.daily.flowers&&DB.daily.flowers.total)||0;
   var html=''+
   '<div class="screen rise" style="background:linear-gradient(180deg,#fdf7ea 0%,#f6edd4 100%); display:flex; flex-direction:column;">'+
+    topBarHTML()+
     '<div class="bhead">'+
       '<button class="bback" id="bBack">‹ '+(v==='hub'?'Zahrada':'Zpět')+'</button>'+
       '<div class="btitle">'+titles[v]+'</div>'+
-      '<div class="bchip">'+miniFlower()+'<span>'+Math.min(tot,goal)+'/'+goal+'</span></div>'+
+      '<div style="width:96px; flex:none;"></div>'+
     '</div>'+
     legendHTML()+
     (v==='hub'?hubHTML(): v==='sklad'?skladHTML(): v==='rozbor'?rozborHTML(): spojHTML())+
@@ -1933,6 +2005,206 @@ function renderBuild(){
   } else {
     app.querySelectorAll('.spword').forEach(function(b){ b.addEventListener('click', function(){ spojTapWord(b.getAttribute('data-w')); }); });
     app.querySelectorAll('.sppic').forEach(function(b){ b.addEventListener('click', function(){ spojTapPic(b.getAttribute('data-p')); }); });
+  }
+}
+
+/* ---------------- slovní druhy (parts of speech) ---------------- */
+var DRUHY_PROMPT='Do kterého záhonu semínko patří?';
+var DRUHY_RECENT_MAX=18;
+var DRUHY_BEDS=[
+  {t:'pod', num:1,  title:'Podstatná jména', q:'kdo? co?',        bg:'#ece0fb', bd:'#c9b3ef', fg:'#7a5bc0'},
+  {t:'prid',num:2,  title:'Přídavná jména',  q:'jaký? jaká?',     bg:'#fbe0eb', bd:'#f0b3cc', fg:'#c85f8b'},
+  {t:'zaj', num:3,  title:'Zájmena',         q:'on, my, kdo',     bg:'#dce7fb', bd:'#b3c9ef', fg:'#4f6fb0'},
+  {t:'cis', num:4,  title:'Číslovky',        q:'kolik? kolikátý?',bg:'#d6eeea', bd:'#9dd0c8', fg:'#3f8c80'},
+  {t:'slo', num:5,  title:'Slovesa',         q:'co dělá?',        bg:'#dcecd6', bd:'#a9cf95', fg:'#5f8a4a'},
+  {t:'pris',num:6,  title:'Příslovce',       q:'kde? kdy? jak?',  bg:'#f7ecc9', bd:'#e8cf8f', fg:'#b9892b'},
+  {t:'pred',num:7,  title:'Předložky',       q:'v, ke, přes',     bg:'#fbe3d6', bd:'#f0c3a6', fg:'#c07a4f'},
+  {t:'spoj',num:8,  title:'Spojky',          q:'i, nebo, když',   bg:'#efe0ef', bd:'#d3b3d3', fg:'#9a5f9a'},
+  {t:'cast',num:9,  title:'Částice',         q:'asi, prý, nechť', bg:'#e2e4ea', bd:'#bcc0cc', fg:'#6a7080'},
+  {t:'cit', num:10, title:'Citoslovce',      q:'mňau! jé! žbluňk!',bg:'#fbdcdc',bd:'#f0b0b0', fg:'#c05f5f'}
+];
+function druhyBedByT(t){ for(var i=0;i<DRUHY_BEDS.length;i++){ if(DRUHY_BEDS[i].t===t) return DRUHY_BEDS[i]; } return DRUHY_BEDS[0]; }
+// slova pečlivě vybraná tak, aby slovní druh byl jednoznačný pro 3. třídu
+var DRUHY_POOL=(function(){
+  var groups={
+    pod:['sova','motýl','zahrada','strom','kočka','pes','škola','kniha','jablko','květina','sluníčko','maminka'],
+    prid:['žlutý','malý','velký','sladký','hezký','veselý','modrý','zelený','teplý','rychlý','silný','chytrý'],
+    zaj:['já','ty','on','ona','my','vy','ten','ta','to','můj','tvůj','náš'],
+    cis:['jeden','dva','tři','čtyři','pět','šest','sedm','osm','devět','deset','první','druhý'],
+    slo:['kvete','létá','spí','běží','čte','píše','zpívá','skáče','jí','pije','maluje','sedí'],
+    pris:['rychle','pomalu','dole','nahoře','večer','ráno','dnes','tady','tam','venku','doma','brzy'],
+    pred:['na','pod','za','v','do','od','ke','přes','u','před','nad','mezi'],
+    spoj:['a','i','ale','nebo','protože','když','že','aby','ani','avšak'],
+    cast:['asi','prý','snad','kéž','ať','nechť','možná','bohužel','naštěstí'],
+    cit:['haf','mňau','bum','ach','jé','haló','žbluňk','cink','bác','hop','au','kuku']
+  };
+  var out=[];
+  for(var k in groups){ if(groups.hasOwnProperty(k)){ groups[k].forEach(function(w){ out.push({w:w,t:k}); }); } }
+  return out;
+})();
+function druhyStat(w){ return DB.druhystats[w]||{seen:0,correct:0,wrong:0}; }
+function druhyPickSession(n){
+  var recent=DB.druhyRecent||[];
+  var used={}, lastT=null, out=[];
+  for(var k=0;k<n;k++){
+    var list=[];
+    for(var i=0;i<DRUHY_POOL.length;i++){ var p=DRUHY_POOL[i]; if(used[p.w]) continue;
+      var st=druhyStat(p.w);
+      var w=1 + st.wrong*3;
+      if(recent.indexOf(p.w)>=0) w*=0.35;
+      if(p.t===lastT) w*=0.15;         // vyhni se stejnému druhu hned za sebou
+      list.push({p:p, w:w});
+    }
+    if(!list.length) break;
+    var pick=weightedPick(list).p;
+    out.push(pick); used[pick.w]=1; lastT=pick.t;
+  }
+  return out;
+}
+function newDruhySession(){
+  return { seq:druhyPickSession(dailyGoal()), idx:0, feedback:null, wrongBed:null, beds:{}, done:false, hadWrong:false, _celeb:null };
+}
+function enterDruhy(){
+  markActivity();
+  G.screen='druhy'; G._druhyStart=Date.now();
+  G.druhy=newDruhySession();
+  druhyStart();
+}
+function exitDruhy(){
+  clearTimeout(G._lockT); clearTimeout(G._advT); setLocked(false);
+  if(G._druhyStart){ DB.daily.playMs=(DB.daily.playMs||0)+(Date.now()-G._druhyStart); G._druhyStart=0; saveDB(); }
+  G.druhy=null; G.screen='garden'; render();
+}
+function druhyRestart(){
+  markActivity();
+  clearTimeout(G._advT);
+  G.druhy=newDruhySession();
+  druhyStart();
+}
+function druhyStart(){
+  var D=G.druhy; if(!D) return;
+  D.feedback=null; D.wrongBed=null; D.hadWrong=false; D._celeb=null;
+  var cur=D.seq[D.idx];
+  if(cur){ var st=DB.druhystats[cur.w]||(DB.druhystats[cur.w]={seen:0,correct:0,wrong:0}); st.seen++; saveDB(); }
+  setLocked(true);
+  renderDruhy();
+  clearTimeout(G._lockT);
+  G._lockT=setTimeout(function(){
+    setLocked(false);
+    if(G.screen!=='druhy') return;
+    var sc=app.querySelector('.screen'); if(sc) sc.classList.remove('waiting');
+    var bg=app.querySelector('.druhy-beds'); if(bg) bg.classList.remove('locked');
+    var h=app.querySelector('.druhy-hint'); if(h) h.textContent=DRUHY_PROMPT;
+  }, 3000);
+}
+function druhyTap(bedId){
+  markActivity();
+  if(G.locked) return;
+  var D=G.druhy; if(!D || D.done || D.feedback==='correct') return;
+  var cur=D.seq[D.idx]; if(!cur) return;
+  var st=DB.druhystats[cur.w]||(DB.druhystats[cur.w]={seen:0,correct:0,wrong:0});
+  var an=DB.daily.answers && DB.daily.answers.druhy;
+  if(bedId===cur.t){
+    D.beds[bedId]=(D.beds[bedId]||0)+1;
+    D.feedback='correct'; D.wrongBed=null;
+    if(!D.hadWrong) st.correct++;
+    DB.druhyRecent.push(cur.w);
+    if(DB.druhyRecent.length>DRUHY_RECENT_MAX) DB.druhyRecent=DB.druhyRecent.slice(-DRUHY_RECENT_MAX);
+    if(an) an.ok++;
+    addFlower('druhy');   // saves DB
+    var last=(D.idx>=D.seq.length-1);
+    if(last) D.done=true;
+    renderDruhy();
+    if(!last){ clearTimeout(G._advT); G._advT=setTimeout(function(){ D.idx++; druhyStart(); }, 1150); }
+  } else {
+    D.feedback='wrong'; D.wrongBed=bedId; D.hadWrong=true;
+    st.wrong++; if(an) an.bad++; saveDB();
+    renderDruhy();
+  }
+}
+function renderDruhy(){
+  G.screen='druhy';
+  var D=G.druhy; if(!D){ enterDruhy(); return; }
+  var sleeping=G._idle;
+  var mood;
+  if(D.done) mood='smile';
+  else if(D.feedback==='correct'){ if(!D._celeb) D._celeb=Math.random()<0.3?'cool':'smile'; mood=D._celeb; }
+  else { D._celeb=null; mood=sleeping?'sleepy':'normal'; }
+
+  var dots='';
+  for(var i=0;i<D.seq.length;i++){
+    var col = (D.done||i<D.idx) ? '#86bf67' : (i===D.idx ? '#eaa93f' : '#e6d3a6');
+    dots+='<span class="druhy-dot" style="background:'+col+';"></span>';
+  }
+  var sub=''+
+    '<div class="bhead">'+
+      '<button class="bback" id="druhyBack">‹ Zahrada</button>'+
+      '<div class="btitle">Slovní druhy</div>'+
+      '<div style="width:96px; flex:none;"></div>'+
+    '</div>'+
+    '<div class="druhy-dots">'+dots+'</div>';
+
+  var body;
+  if(D.done){
+    body=''+
+      '<div class="druhy-done"><div class="bpanel">'+bigSprout()+
+        '<div class="pt">Skvěle! Roztřídila jsi všechna slova.</div>'+
+        '<div class="druhy-donesub">Každé slovo našlo svůj slovní druh a rozkvetlo.</div>'+
+        '<div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">'+
+          '<button class="cta small" id="druhyAgain">Ještě jednou</button>'+
+          '<button class="btn2 ghost" id="druhyHome">Zpět do zahrady</button>'+
+        '</div>'+
+      '</div></div>';
+  } else {
+    var cur=D.seq[D.idx];
+    var hint = D.feedback==='correct' ? 'Krásně roste!' : (G.locked ? 'přemýšlej…' : DRUHY_PROMPT);
+    var owlAnim = (G.locked && D.feedback!=='correct') ? 'druhy-owl think' : 'druhy-owl';
+    var beds='<div class="druhy-beds'+(G.locked?' locked':'')+'">';
+    for(var b=0;b<DRUHY_BEDS.length;b++){
+      var bd=DRUHY_BEDS[b];
+      var ring = (D.feedback==='correct' && bd.t===cur.t) ? '0 0 0 4px #86bf67'
+               : (D.wrongBed===bd.t) ? '0 0 0 4px #f0c088'
+               : '0 8px 18px -12px rgba(90,70,40,.5)';
+      var flowers=''; var fn=D.beds[bd.t]||0;
+      for(var gI=0;gI<fn;gI++){ flowers+=chipFlower(bd.bd,'#f6d17a',18); }
+      beds+='<button class="druhy-bed" data-t="'+bd.t+'" style="background:'+bd.bg+'; border-color:'+bd.bd+'; box-shadow:'+ring+';">'+
+        '<span class="druhy-num" style="background:'+bd.fg+';">'+bd.num+'</span>'+
+        '<span class="druhy-title" style="color:'+bd.fg+';">'+bd.title+'</span>'+
+        '<span class="druhy-q" style="color:'+bd.fg+';">'+esc(bd.q)+'</span>'+
+        '<span class="druhy-flowers">'+flowers+'</span>'+
+      '</button>';
+    }
+    beds+='</div>';
+    var wrong = D.feedback==='wrong'
+      ? '<div class="druhy-wrong">Ještě ne — zkus jiný záhon. Nápověda: «'+esc(druhyBedByT(cur.t).q)+'»</div>'
+      : '';
+    body=''+
+      '<div class="druhy-play">'+
+        '<div class="druhy-top">'+
+          '<div class="'+owlAnim+'">'+owlSVG()+'</div>'+
+          '<div class="druhy-wordcol">'+
+            '<div class="druhy-word">'+esc(cur.w)+'</div>'+
+            '<div class="druhy-hint">'+hint+'</div>'+
+          '</div>'+
+        '</div>'+
+        beds+ wrong+
+      '</div>';
+  }
+
+  var html=''+
+  '<div class="screen rise'+(G.locked?' waiting':'')+'" style="background:linear-gradient(180deg,#fdf7ea 0%,#f6edd4 100%); display:flex; flex-direction:column;">'+
+    topBarHTML()+ sub+ body+
+  '</div>';
+  app.innerHTML=html;
+  setOwlMood(app, mood);
+
+  var bk=document.getElementById('druhyBack'); if(bk) bk.addEventListener('click', exitDruhy);
+  var ag=document.getElementById('druhyAgain'); if(ag) ag.addEventListener('click', druhyRestart);
+  var hm=document.getElementById('druhyHome'); if(hm) hm.addEventListener('click', exitDruhy);
+  if(!D.done){
+    app.querySelectorAll('.druhy-bed').forEach(function(btn){
+      btn.addEventListener('click', function(){ druhyTap(btn.getAttribute('data-t')); });
+    });
   }
 }
 
@@ -2048,6 +2320,8 @@ function confirmReset(){
   document.getElementById('cNo').addEventListener('click', function(){ document.getElementById('cov').remove(); });
   document.getElementById('cYes').addEventListener('click', function(){
     DB.garden={totalFlowers:0}; DB.facts={}; DB.words={};
+    DB.rozstats={}; DB.rozRecent=[]; DB.spojRecent=[]; DB.lastSkladFam=null;
+    DB.druhystats={}; DB.druhyRecent=[];
     DB.daily=clone(DEFAULTS.daily); DB.daily.date=todayStr(); DB.history=[];
     saveDB(); document.getElementById('cov').remove();
     var p=document.getElementById('pov'); if(p) p.remove();

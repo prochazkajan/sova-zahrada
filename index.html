@@ -99,6 +99,12 @@
   .qbig{font-size:clamp(52px,10vmin,116px); font-weight:800; line-height:1; text-align:center;}
   .gap{display:inline-flex; align-items:center; justify-content:center; min-width:.7em; height:.9em;
     margin:0 .06em; background:rgba(246,213,130,.42); border:4px dashed #e8c877; border-radius:16px; vertical-align:middle;}
+  /* chosen answer dropped into the question/formula after a pick */
+  .gapfill{display:inline-flex; align-items:center; justify-content:center; min-width:.7em;
+    margin:0 .06em; padding:0 .12em; border-radius:16px; vertical-align:middle; font-weight:800;
+    animation:riseIn .35s ease both;}
+  .gapfill.ok{color:var(--green-ink); background:rgba(134,191,103,.22);}
+  .gapfill.no{color:#c47b62; background:rgba(196,123,98,.18);}
   .qsentence{font-size:clamp(20px,3.4vmin,30px); font-weight:600; color:var(--muted2); text-align:center; max-width:680px; line-height:1.35;}
   .qsentence b{color:var(--ink); letter-spacing:.02em;}
   /* sentence-focused (Věty) layout */
@@ -148,9 +154,6 @@
   .explainnote{font-size:clamp(17px,2.6vmin,20px); font-weight:700; color:#8a7350; text-align:center; max-width:560px; line-height:1.4;}
   /* answer recall on result screens */
   .pickline{font-size:clamp(17px,2.6vmin,21px); font-weight:700; color:var(--muted2); text-align:center; line-height:1.5;}
-  .pickline.ok{color:var(--green-ink);}
-  .pickline b{color:#8a7350;}
-  .pickline.ok b{color:var(--green-ink);}
   .pick-mine{color:#c47b62; font-weight:800;}
   .pick-right{color:var(--green-ink); font-weight:800;}
 
@@ -217,7 +220,7 @@
 </head>
 <body>
 <div id="app"></div>
-<div class="ver">v0.5</div>
+<div class="ver">v0.6</div>
 
 <script>
 "use strict";
@@ -891,7 +894,10 @@ function renderRound(){
   var owlColHTML='<div class="owlcol"><div class="'+owlAnimClass+'">'+owlSVG()+'</div><div class="hint">'+hintText+'</div></div>';
 
   if(it.topic==='math'){
-    questionHTML='<div class="qbig">'+it.a+' × '+it.b+' = ?</div>';
+    var mtail = (R.feedback && R.pick!=null)
+      ? '= <span class="gapfill '+(R.feedback==='correct'?'ok':'no')+'">'+esc(String(R.pick))+'</span>'
+      : '= ?';
+    questionHTML='<div class="qbig">'+it.a+' × '+it.b+' '+mtail+'</div>';
     if(R.feedback==='correct'){
       answersHTML=praiseHTML(R);
     } else if(R.feedback==='wrong'){
@@ -909,7 +915,10 @@ function renderRound(){
   } else {
     var w=it.w;
     var form=(DB.settings.setup&&DB.settings.setup.czechForm)||'slova';
-    var inlineGap='<span class="wgap">'+esc(w.pre)+'<span class="gap"></span>'+esc(w.post)+'</span>';
+    var gapInner = (R.feedback && R.pick!=null)
+      ? '<span class="gapfill '+(R.feedback==='correct'?'ok':'no')+'">'+esc(String(R.pick))+'</span>'
+      : '<span class="gap"></span>';
+    var inlineGap='<span class="wgap">'+esc(w.pre)+gapInner+esc(w.post)+'</span>';
     if(form==='vety' && w.sentence){
       questionHTML='<div class="qsent">'+w.sentence.replace('___', inlineGap)+'</div>';
     } else {
@@ -971,11 +980,10 @@ function continueBtnHTML(R){
   return note+'<button class="cta small" id="contBtn">'+label+'</button>';
 }
 function praiseHTML(R){
-  var pick = (R.pick!=null)
-    ? '<div class="pickline ok">Tvoje odpověď: <b>'+esc(String(R.pick))+'</b></div>' : '';
+  // the chosen (correct) answer is now shown filled into the question itself,
+  // so no separate "Tvoje odpověď" line is needed here.
   return '<div class="praise">'+bigSprout()+
     '<div class="msg">Výborně! Vykvetla nová kytička.</div>'+
-    pick+
     continueBtnHTML(R)+'</div>';
 }
 function pickCompareHTML(R, rightHTML){

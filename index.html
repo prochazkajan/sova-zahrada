@@ -218,11 +218,98 @@
   .formseg button[aria-pressed="true"]{background:var(--green); color:#fff;}
   .tcard.off .slider,.tcard.off .formseg{pointer-events:none;}
   .setupwarn{font-size:15px; font-weight:800; color:#a5644f; text-align:center;}
+
+  /* ---------- stavba slova (build mode) ---------- */
+  @keyframes nudge{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  @keyframes tilePop{0%{opacity:0;transform:translateY(10px) scale(.7)}60%{opacity:1;transform:translateY(-3px) scale(1.08)}100%{opacity:1;transform:translateY(0) scale(1)}}
+  .cta.build{display:inline-flex; align-items:center; justify-content:center; gap:12px;
+    background:#a98fd8; box-shadow:0 16px 30px -12px rgba(120,90,190,.55);}
+  .cta.build:hover{box-shadow:0 24px 38px -12px rgba(120,90,190,.6);}
+  .bhead{width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 20px 4px; flex-wrap:wrap;}
+  .bback{display:inline-flex; align-items:center; gap:6px; min-height:52px; padding:0 20px; font-size:21px; font-weight:800;
+    color:#7a6a45; background:var(--cream); border:3px solid var(--border); border-radius:30px; transition:transform .3s ease;}
+  .bback:hover{transform:translateX(-3px);}
+  .btitle{font-size:clamp(24px,3.4vmin,32px); font-weight:800;}
+  .bchip{display:flex; align-items:center; gap:7px; min-height:52px; padding:0 16px; background:var(--cream);
+    border:3px solid var(--border); border-radius:30px; font-size:21px; font-weight:800; color:var(--green-ink);}
+  .legend{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; padding:4px 18px;}
+  .lgd{display:flex; align-items:center; gap:7px; padding:5px 13px; border-radius:22px; border:2px solid; font-size:14px; font-weight:800;}
+  .lgd .dot{width:11px; height:11px; border-radius:50%; background:currentColor;}
+  /* morpheme role colors (shared by legend, slots, tiles, chunks, word parts) */
+  .r-pre{color:#7a5bc0; background:#ece0fb; border-color:#c9b3ef;}
+  .r-kor{color:#5f8a4a; background:#dcecd6; border-color:#a9cf95;}
+  .r-prip{color:#c85f8b; background:#fbe0eb; border-color:#f0b3cc;}
+  .r-kon{color:#b9892b; background:#f7ecc9; border-color:#e8cf8f;}
+  .r-none{color:#b7a582; background:#f4ecd8; border-color:#e6d3a6;}
+  .bwrap{flex:1; display:flex; flex-direction:column; align-items:center; gap:14px; padding:8px 18px 44px; overflow-y:auto; min-height:0;}
+  .bnote{font-size:clamp(19px,2.8vmin,25px); font-weight:600; color:#8a7350; text-align:center; max-width:640px; line-height:1.32;}
+  .bcards{display:flex; flex-wrap:wrap; gap:20px; justify-content:center;}
+  .bcard{position:relative; width:250px; display:flex; flex-direction:column; align-items:center; gap:10px; padding:24px 20px 22px;
+    background:var(--cream); border:3px solid var(--border); border-radius:28px; box-shadow:0 16px 34px -20px rgba(90,70,40,.5);
+    transition:transform .3s ease, box-shadow .3s ease;}
+  .bcard:hover{transform:translateY(-5px); box-shadow:0 26px 44px -20px rgba(90,70,40,.5);}
+  .bcard .bt{font-size:25px; font-weight:800; color:var(--ink);}
+  .bcard .bd{font-size:15px; font-weight:600; color:var(--muted2); text-align:center; line-height:1.35;}
+  .bcard .donebadge{position:absolute; top:12px; right:13px; width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+    background:var(--green); border-radius:50%;}
+  /* skládačka */
+  .sklane{display:flex; align-items:flex-start; gap:8px; flex-wrap:wrap; justify-content:center;}
+  .skcol{display:flex; flex-direction:column; align-items:center; gap:5px;}
+  .cl{font-size:12px; font-weight:800; letter-spacing:.5px;}
+  .skslot{min-width:74px; min-height:70px; display:flex; align-items:center; justify-content:center; padding:6px 14px;
+    font-size:clamp(28px,5vmin,44px); font-weight:800; border:4px solid; border-radius:18px; font-family:var(--font);}
+  .skslot.empty{border-style:dashed; font-size:28px; opacity:.8;}
+  .skslot.want{animation:hintFade 1.6s ease-in-out infinite;}
+  .tilerow{display:flex; flex-direction:column; align-items:center; gap:7px;}
+  .tiles{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+  .tile{min-width:74px; min-height:58px; padding:0 14px; font-size:26px; font-weight:800; border:3px solid; border-radius:16px;
+    box-shadow:0 5px 12px -7px rgba(90,70,40,.4); transition:transform .2s ease, box-shadow .2s ease;}
+  .tile:hover{transform:translateY(-3px);}
+  .tile.sel{box-shadow:0 0 0 4px rgba(90,70,40,.22);}
+  .tile.want{animation:hintFade 1.4s ease-in-out infinite; box-shadow:0 0 0 5px rgba(234,169,63,.55);}
+  .bmsg{font-size:19px; font-weight:700; color:#c88a4a; text-align:center; max-width:560px; line-height:1.4;}
+  .bmsg.good{color:var(--green-ink);}
+  .bmsg.mut{color:var(--muted2);}
+  .nudge{animation:nudge .5s ease both;}
+  .foundwrap{width:min(760px,96%); display:flex; flex-direction:column; gap:8px; align-items:center;}
+  .fword{display:flex; align-items:center; gap:8px; padding:7px 13px; background:var(--cream); border:3px solid var(--border);
+    border-radius:20px; animation:tilePop .4s cubic-bezier(.34,1.4,.5,1) both;}
+  .mpart{font-size:23px; font-weight:800; padding:2px 8px; margin:0 1px; border-radius:9px; border:2px solid;}
+  .hintbtn{display:inline-flex; align-items:center; gap:8px; min-height:54px; padding:0 22px; font-size:19px; font-weight:800;
+    color:#7a6a45; background:#f6e6bf; border:3px solid var(--border2); border-radius:30px; transition:transform .2s ease;}
+  .hintbtn:hover{transform:translateY(-2px);}
+  .hintbtn:disabled{opacity:.55; cursor:default; transform:none;}
+  .hintbtn.waiting{animation:hintFade 2.4s ease-in-out infinite;}
+  /* rozbor */
+  .rozdots{display:flex; gap:10px;}
+  .rozdots span{width:14px; height:14px; border-radius:50%;}
+  .rozrow{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:flex-start;}
+  .rozbit{display:flex; flex-direction:column; align-items:center; gap:7px; padding:4px 2px; background:none; border:none;}
+  .rozbit .ch{min-width:62px; padding:10px 16px; text-align:center; font-size:clamp(34px,6vmin,54px); font-weight:800;
+    border-radius:18px; border:4px solid; transition:all .2s ease; font-family:var(--font);}
+  /* spojovačka */
+  .spwrap{display:flex; gap:clamp(24px,8vw,110px); align-items:center; justify-content:center; flex-wrap:wrap;}
+  .spcol{display:flex; flex-direction:column; gap:14px;}
+  .spword{display:flex; align-items:center; gap:8px; min-width:200px; min-height:60px; padding:10px 16px; border-radius:22px;
+    background:var(--cream); border:3px solid var(--border); box-shadow:0 8px 18px -12px rgba(90,70,40,.35); transition:transform .25s ease;}
+  .spword:hover{transform:translateX(4px);}
+  .spword.sel{background:#f3ebff; border-color:#c9b3ef; box-shadow:0 12px 24px -12px rgba(120,90,200,.5);}
+  .spword.hit{background:#e4f2dc; border-color:#a9cf95; cursor:default;}
+  .sppic{width:112px; height:112px; display:flex; align-items:center; justify-content:center; border-radius:24px;
+    background:var(--cream); border:3px solid var(--border); transition:transform .25s ease;}
+  .sppic:hover{transform:scale(1.05);}
+  .sppic.hit{background:#e4f2dc; border-color:#a9cf95;}
+  .spemoji{font-size:60px; line-height:1;}
+  .spfam{font-size:clamp(15px,2.4vmin,18px); font-weight:700; color:var(--muted2); text-align:center; max-width:600px; line-height:1.4;}
+  .spfam b{color:#5f8a4a;}
+  .bpanel{display:flex; flex-direction:column; align-items:center; gap:14px; background:#fbf3e4; border:3px solid var(--border);
+    border-radius:26px; padding:20px 30px; animation:riseIn .5s ease both; max-width:min(640px,94vw);}
+  .bpanel .pt{font-size:27px; font-weight:800; color:var(--green-ink); text-align:center;}
 </style>
 </head>
 <body>
 <div id="app"></div>
-<div class="ver">v0.7</div>
+<div class="ver">v0.12</div>
 
 <script>
 "use strict";
@@ -240,7 +327,14 @@ var DEFAULTS={
              setup:{ mathOn:true, maxFactor:10, czechOn:true, czechForm:'slova', czechLevel:3 } },
   garden:{ totalFlowers:0 },
   facts:{}, words:{},
-  daily:{ date:'', playMs:0, rounds:0 }
+  rozstats:{}, rozRecent:[], spojRecent:[], lastSkladFam:null,
+  daily:{ date:'', playMs:0, rounds:0,
+          flowers:{ total:0, math:0, czech:0, build:0 },
+          answers:{ math:{ok:0,bad:0}, czech:{ok:0,bad:0} },
+          build:{ sklad:{found:[], hints:0, done:false, everDone:false, fam:null},
+                  rozbor:{idx:0, wrong:0, done:false, everDone:false, set:[]},
+                  spoj:{matched:[], wrong:0, done:false, everDone:false, set:[], fam:null} } },
+  history:[]   // uzavřené dny (posledních 30) pro rodičovský přehled
 };
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
 var DB=clone(DEFAULTS);
@@ -262,14 +356,62 @@ function loadDB(){
       su.mathOn=su.mathOn!==false; su.czechOn=su.czechOn!==false;
       DB.garden=Object.assign(clone(DEFAULTS.garden), d.garden||{});
       DB.facts=d.facts||{}; DB.words=d.words||{};
-      DB.daily=Object.assign(clone(DEFAULTS.daily), d.daily||{});
+      DB.rozstats=d.rozstats||{};
+      DB.rozRecent=Array.isArray(d.rozRecent)? d.rozRecent.slice(-15) : [];
+      DB.spojRecent=Array.isArray(d.spojRecent)? d.spojRecent.slice(-15) : [];
+      DB.lastSkladFam=d.lastSkladFam||null;
+      // deep-merge daily so older saves gain the new sub-objects
+      var dd=d.daily||{};
+      DB.daily=Object.assign(clone(DEFAULTS.daily), dd);
+      DB.daily.flowers=Object.assign(clone(DEFAULTS.daily.flowers), dd.flowers||{});
+      DB.daily.answers=clone(DEFAULTS.daily.answers);
+      if(dd.answers){ ['math','czech'].forEach(function(k){ DB.daily.answers[k]=Object.assign(clone(DEFAULTS.daily.answers[k]), dd.answers[k]||{}); }); }
+      DB.daily.build=clone(DEFAULTS.daily.build);
+      if(dd.build){ ['sklad','rozbor','spoj'].forEach(function(k){ DB.daily.build[k]=Object.assign(clone(DEFAULTS.daily.build[k]), dd.build[k]||{}); }); }
+      if(!Array.isArray(DB.daily.build.sklad.found)) DB.daily.build.sklad.found=[];
+      if(!Array.isArray(DB.daily.build.spoj.matched)) DB.daily.build.spoj.matched=[];
+      if(!Array.isArray(DB.daily.build.rozbor.set)) DB.daily.build.rozbor.set=[];
+      if(!Array.isArray(DB.daily.build.spoj.set)) DB.daily.build.spoj.set=[];
+      DB.history=Array.isArray(d.history)? d.history.slice(-30) : [];
     }
   }catch(e){ /* memory-only fallback */ }
   rolloverDaily();
 }
 function saveDB(){ try{ localStorage.setItem(LSKEY, JSON.stringify(DB)); }catch(e){} }
 function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
-function rolloverDaily(){ var t=todayStr(); if(DB.daily.date!==t){ DB.daily={date:t, playMs:0, rounds:0}; saveDB(); } }
+function rolloverDaily(){
+  var t=todayStr();
+  if(DB.daily.date===t) return;
+  var od=DB.daily;
+  // archive the finished day (compact summary) before resetting
+  if(od.date && ((od.flowers&&od.flowers.total>0) || od.playMs>0 || od.rounds>0)){
+    var ob=od.build||{};
+    DB.history.push({
+      date:od.date, playMs:od.playMs||0, rounds:od.rounds||0,
+      flowers:od.flowers||clone(DEFAULTS.daily.flowers),
+      answers:od.answers||clone(DEFAULTS.daily.answers),
+      build:{
+        skladFound:(ob.sklad&&ob.sklad.found&&ob.sklad.found.length)||0,
+        skladHints:(ob.sklad&&ob.sklad.hints)||0,
+        skladDone:!!(ob.sklad&&ob.sklad.done),
+        rozborDone:!!(ob.rozbor&&ob.rozbor.done),
+        rozborWrong:(ob.rozbor&&ob.rozbor.wrong)||0,
+        spojDone:!!(ob.spoj&&ob.spoj.done),
+        spojWrong:(ob.spoj&&ob.spoj.wrong)||0
+      }
+    });
+    if(DB.history.length>30) DB.history=DB.history.slice(-30);
+  }
+  DB.daily=clone(DEFAULTS.daily); DB.daily.date=t; saveDB();
+}
+/* denní kytičky — sdílené počítadlo přes všechny módy */
+function dailyGoal(){ return DB.settings.sessionLength; }
+function addFlower(mode){
+  var f=DB.daily.flowers||(DB.daily.flowers=clone(DEFAULTS.daily.flowers));
+  f.total++; f[mode]=(f[mode]||0)+1;
+  DB.garden.totalFlowers=(DB.garden.totalFlowers||0)+1;
+  saveDB();
+}
 
 /* ---------------- helpers ---------------- */
 function rnd(n){ return Math.floor(Math.random()*n); }
@@ -624,6 +766,159 @@ function pickWord(avoidId){
   return weightedPick(mapped).item;
 }
 
+/* ---------------- stavba slova — rozbor bank ---------------- */
+// R('chunk:role chunk:role ...', level, řada, rodina, emoji, svg) — roles: pre/kor/prip/kon.
+// Slovesa: kmenová samohláska jako přípona, -t jako koncovka (letět = let:kor ě:prip t:kon).
+// Obrázek pro spojovačku: svg (klíč do PIC_SVG) má přednost, jinak emoji; prázdné obojí = slovo
+// se ve spojovačce nepoužije.
+function R(seg,level,row,fam,emoji,svg){
+  var chunks=seg.split(' ').map(function(p){ var q=p.split(':'); return {t:q[0], r:q[1]}; });
+  var w=chunks.map(function(c){ return c.t; }).join('');
+  return {id:'roz:'+w, w:w, chunks:chunks, level:level, row:row||null, fam:fam, emoji:emoji||null, svg:svg||null};
+}
+/* === ROZBOR_BANK:BEGIN — generováno z data/rozbor-slova.xlsx (119 slov, potvrzeno 2026-07-04), needitovat ručně === */
+var ROZBOR_BANK=[
+  R('byt:kor',1,'b','byt'),
+  R('byt:kor ov:prip ý:kon',1,'b','byt'),
+  R('o:pre byt:kor n:prip ý:kon',2,'b','byt'),
+  R('ná:pre byt:kor ek:prip',1,'b','byt','🛋️'),
+  R('pří:pre byt:kor ek:prip',2,'b','byt'),
+  R('kobyl:kor a:kon',1,'b','kobyla','🐎'),
+  R('kobyl:kor k:prip a:kon',1,'b','kobyla'),
+  R('byl:kor in:prip a:kon',1,'b','bylina','🌿'),
+  R('býl:kor í:kon',3,'b','bylina'),
+  R('bystr:kor ý:kon',1,'b','bystrý'),
+  R('bystř:kor in:prip a:kon',2,'b','bystrý'),
+  R('býk:kor',1,'b','býk','🐂'),
+  R('býč:kor ek:prip',2,'b','býk'),
+  R('o:pre byd:kor l:prip í:kon',3,'b','bydlet'),
+  R('ryb:kor a:kon',1,'b','ryba','🐟','fish'),
+  R('ryb:kor k:prip a:kon',1,'b','ryba'),
+  R('ryb:kor ník:prip',1,'b','ryba','','pond'),
+  R('ryb:kor ář:prip',1,'b','ryba','🎣','rod'),
+  R('mlýn:kor',1,'l','mlýn','','mill'),
+  R('mlýn:kor ek:prip',1,'l','mlýn','','grinder'),
+  R('mlyn:kor ář:prip',2,'l','mlýn','','miller'),
+  R('mlýn:kor sk:prip ý:kon',2,'l','mlýn'),
+  R('lyž:kor e:kon',1,'l','lyže','🎿'),
+  R('lyž:kor ař:prip',1,'l','lyže','⛷️'),
+  R('lyž:kor ova:prip t:kon',2,'l','lyže'),
+  R('slyš:kor e:prip t:kon',2,'l','slyšet','👂'),
+  R('u:pre slyš:kor e:prip t:kon',2,'l','slyšet'),
+  R('plyn:kor',1,'l','plyn'),
+  R('plyn:kor ov:prip ý:kon',1,'l','plyn'),
+  R('lys:kor ý:kon',2,'l','lysý','👨‍🦲'),
+  R('lys:kor in:prip a:kon',2,'l','lysý'),
+  R('vz:pre lyk:kor',3,'l','vzlykat'),
+  R('myš:kor',1,'m','myš','🐭'),
+  R('myš:kor k:prip a:kon',1,'m','myš'),
+  R('myš:kor ák:prip',1,'m','myš'),
+  R('myš:kor í:kon',2,'m','myš'),
+  R('mysl:kor',1,'m','myslet'),
+  R('s:pre mysl:kor',2,'m','myslet'),
+  R('ú:pre mysl:kor',2,'m','myslet'),
+  R('vý:pre mysl:kor',1,'m','myslet'),
+  R('vy:pre mysl:kor e:prip t:kon',2,'m','myslet'),
+  R('u:pre mý:kor t:kon',2,'m','mýt'),
+  R('mý:kor dl:prip o:kon',2,'m','mýt','🧼'),
+  R('o:pre myl:kor',2,'m','mýlit se'),
+  R('hlemýžď:kor',1,'m','hlemýžď','🐌'),
+  R('mýt:kor in:prip a:kon',2,'m','mýtit'),
+  R('pytel:kor',1,'p','pytel'),
+  R('pytl:kor ík:prip',1,'p','pytel'),
+  R('pytl:kor ák:prip',2,'p','pytel'),
+  R('pých:kor a:kon',1,'p','pýcha'),
+  R('pyš:kor n:prip ý:kon',2,'p','pýcha'),
+  R('pře:pre pych:kor',2,'p','pýcha'),
+  R('kopyt:kor o:kon',1,'p','kopyto'),
+  R('kopýt:kor k:prip o:kon',2,'p','kopyto'),
+  R('netopýr:kor',1,'p','netopýr','🦇'),
+  R('pyl:kor',1,'p','pyl'),
+  R('třpyt:kor k:prip a:kon',1,'p','třpytit se'),
+  R('třpyt:kor iv:prip ý:kon',2,'p','třpytit se'),
+  R('syp:kor a:prip t:kon',2,'s','sypat'),
+  R('na:pre syp:kor a:prip t:kon',2,'s','sypat'),
+  R('vy:pre syp:kor a:prip t:kon',2,'s','sypat'),
+  R('zá:pre syp:kor',1,'s','sypat'),
+  R('syp:kor k:prip ý:kon',2,'s','sypat'),
+  R('sýp:kor k:prip a:kon',2,'s','sypat'),
+  R('sýr:kor',1,'s','sýr','🧀'),
+  R('sýr:kor ov:prip ý:kon',1,'s','sýr'),
+  R('syn:kor',1,'s','syn','👦'),
+  R('syn:kor ek:prip',1,'s','syn'),
+  R('syt:kor ý:kon',1,'s','sytý'),
+  R('na:pre syt:kor i:prip t:kon',2,'s','sytý'),
+  R('sýkor:kor a:kon',1,'s','sýkora','🐦'),
+  R('sýkor:kor k:prip a:kon',1,'s','sýkora'),
+  R('syk:kor ot:prip',2,'s','syčet'),
+  R('za:pre syč:kor e:prip t:kon',2,'s','syčet'),
+  R('vý:pre let:kor',1,'v','letět'),
+  R('od:pre let:kor',1,'v','letět','🛫'),
+  R('pře:pre let:kor',1,'v','letět'),
+  R('let:kor ec:prip',1,'v','letět','👨‍✈️','pilot'),
+  R('let:kor adl:prip o:kon',1,'v','letět','✈️','plane'),
+  R('let:kor išt:prip ě:kon',2,'v','letět','','airport'),
+  R('let:kor ě:prip t:kon',2,'v','letět'),
+  R('vys:kor ok:prip ý:kon',2,'v','vysoký'),
+  R('výš:kor k:prip a:kon',2,'v','vysoký'),
+  R('z:pre vyk:kor',2,'v','zvyk'),
+  R('ná:pre vyk:kor',2,'v','zvyk'),
+  R('ob:pre vyk:kor l:prip ý:kon',3,'v','zvyk'),
+  R('žvýk:kor a:prip t:kon',2,'v','žvýkat'),
+  R('žvýk:kor ačk:prip a:kon',2,'v','žvýkat'),
+  R('vydr:kor a:kon',1,'v','vydra','🦦'),
+  R('výr:kor',1,'v','výr'),
+  R('jazyk:kor',1,'z','jazyk','👅'),
+  R('jazyk:kor ov:prip ý:kon',1,'z','jazyk'),
+  R('jazýč:kor ek:prip',3,'z','jazyk'),
+  R('vy:pre zýv:kor a:prip t:kon',3,'z','nazývat'),
+  R('za:pre hrad:kor a:kon',1,'','hrad','','garden'),
+  R('za:pre hrád:kor k:prip a:kon',1,'','hrad'),
+  R('za:pre hrad:kor ník:prip',1,'','hrad','','gardener'),
+  R('za:pre hrad:kor n:prip í:kon',1,'','hrad'),
+  R('hrad:kor',1,'','hrad','🏰','castle'),
+  R('květ:kor',1,'','květ'),
+  R('květ:kor in:prip a:kon',1,'','květ','🌷'),
+  R('roz:pre kvet:kor l:prip ý:kon',2,'','květ'),
+  R('les:kor',1,'','les','🌲','trees'),
+  R('les:kor ík:prip',1,'','les'),
+  R('les:kor n:prip í:kon',1,'','les'),
+  R('les:kor ník:prip',1,'','les','','forester'),
+  R('pra:pre les:kor',2,'','les','','jungle'),
+  R('vod:kor a:kon',1,'','voda','💧','voda'),
+  R('vod:kor ník:prip',1,'','voda','','vodnik'),
+  R('pod:pre vod:kor n:prip í:kon',2,'','voda','','podvodni'),
+  R('zem:kor ě:kon',1,'','země','🌍'),
+  R('pod:pre zem:kor n:prip í:kon',1,'','země'),
+  R('pří:pre zem:kor í:kon',2,'','země'),
+  R('sov:kor a:kon',1,'','sova','🦉'),
+  R('sov:kor í:kon',2,'','sova'),
+  R('sov:kor ičk:prip a:kon',1,'','sova'),
+  R('mysl:kor e:prip t:kon',1,'m','myslet'),
+  R('od:pre let:kor ě:prip t:kon',2,'v','letět'),
+  R('pře:pre let:kor ě:prip t:kon',2,'v','letět')
+];
+/* === ROZBOR_BANK:END === */
+(function(){ // self-check: složení částí = slovo, právě jeden kořen, pořadí pre<kor<prip<kon
+  var ORD={pre:1,kor:2,prip:3,kon:4};
+  for(var i=0;i<ROZBOR_BANK.length;i++){ var e=ROZBOR_BANK[i], last=0, kor=0;
+    for(var j=0;j<e.chunks.length;j++){ var c=e.chunks[j];
+      if(!ORD[c.r] || ORD[c.r]<=last) console.warn('ROZBOR_BANK: špatné pořadí částí u', e.w);
+      last=ORD[c.r]; if(c.r==='kor') kor++;
+    }
+    if(kor!==1) console.warn('ROZBOR_BANK: slovo bez (či s více) kořenů:', e.w);
+  }
+})();
+function rozborFamilies(){ // rodina -> {fam, kkorVarianty, slova[]} (pro skládačku/spojovačku)
+  var m={};
+  for(var i=0;i<ROZBOR_BANK.length;i++){ var e=ROZBOR_BANK[i];
+    var f=m[e.fam]||(m[e.fam]={fam:e.fam, koreny:[], slova:[]});
+    f.slova.push(e);
+    for(var j=0;j<e.chunks.length;j++) if(e.chunks[j].r==='kor' && f.koreny.indexOf(e.chunks[j].t)<0) f.koreny.push(e.chunks[j].t);
+  }
+  return m;
+}
+
 /* ---------------- game state ---------------- */
 var app=document.getElementById('app');
 var G={
@@ -643,8 +938,9 @@ function newRound(){
   DB.daily.rounds=(DB.daily.rounds||0)+1; saveDB();
   G._roundStart=Date.now();
   return {
-    goal: DB.settings.sessionLength,
-    grown:0,
+    goal: dailyGoal(),
+    // daily garden already full -> "free play": flowers go to the meadow only
+    freePlay: ((DB.daily.flowers&&DB.daily.flowers.total)||0) >= dailyGoal(),
     presented:0,           // number of questions shown
     requeue:[],            // {item, due}
     current:null,          // current question
@@ -695,11 +991,13 @@ function answer(correct, item, pick){
   R.pick=pick;
   if(item.topic==='math'){ var st=factStat(item.key); if(correct) st.correct++; else st.wrong++; DB.facts[item.key]=st; }
   else { var ws=wordStat(item.w.id); if(correct) ws.correct++; else ws.wrong++; DB.words[item.w.id]=ws; }
+  // daily metrics
+  var an=DB.daily.answers && DB.daily.answers[item.topic];
+  if(an){ if(correct) an.ok++; else an.bad++; }
   if(correct){
     R.feedback='correct';
-    R.grown++; R.grownThisRound++;
-    DB.garden.totalFlowers=(DB.garden.totalFlowers||0)+1;
-    saveDB();
+    R.grownThisRound++;
+    addFlower(item.topic);
   } else {
     R.feedback='wrong';
     // schedule requeue 3-5 later
@@ -714,7 +1012,10 @@ function answer(correct, item, pick){
 
 function continueRound(){
   var R=G.round;
-  if(R.feedback==='correct' && R.grown>=R.goal){ endRound(); return; }
+  var done = R.freePlay
+    ? (R.grownThisRound>=R.goal)
+    : (((DB.daily.flowers&&DB.daily.flowers.total)||0)>=R.goal);
+  if(R.feedback==='correct' && done){ endRound(); return; }
   startQuestion();
 }
 function endRound(){
@@ -724,10 +1025,10 @@ function endRound(){
 }
 
 /* ---------------- idle dozing ---------------- */
-function markActivity(){ G._lastAct=Date.now(); if(G._idle){ G._idle=false; if(G.screen==='garden'||G.screen==='round') render(); } }
+function markActivity(){ G._lastAct=Date.now(); if(G._idle){ G._idle=false; if(G.screen==='garden'||G.screen==='round'||G.screen==='build') render(); } }
 function checkIdle(){
   var idle = Date.now()-G._lastAct > 60000;
-  if(idle!==G._idle){ G._idle=idle; if(G.screen==='garden'||G.screen==='round') render(); }
+  if(idle!==G._idle){ G._idle=idle; if(G.screen==='garden'||G.screen==='round'||G.screen==='build') render(); }
 }
 window.addEventListener('pointerdown', markActivity, true);
 window.addEventListener('keydown', markActivity, true);
@@ -746,17 +1047,22 @@ function render(){
   if(G.screen==='garden') renderGarden();
   else if(G.screen==='setup') renderSetup();
   else if(G.screen==='round') renderRound();
+  else if(G.screen==='build') renderBuild();
   else if(G.screen==='summary') renderSummary();
 }
 
 function renderGarden(){
   G.screen='garden';
   var sleeping=G._idle;
-  var afterRound = DB.daily.rounds>0;
+  var flowersToday=(DB.daily.flowers&&DB.daily.flowers.total)||0;
+  var afterPlay = DB.daily.rounds>0 || flowersToday>0;
   var bubble = sleeping
     ? 'Psst… sova jen tak podřimuje. Ťukni, až budeš chtít.'
-    : (afterRound ? 'Krásná práce! Zasadíme další kytičky?' : 'Ahoj! Zasadíme dnes další kytičky?');
+    : (afterPlay ? 'Krásná práce! Zasadíme další kytičky?' : 'Ahoj! Zasadíme dnes další kytičky?');
   var playLabel = fmtMs(DB.daily.playMs||0);
+  var subLine = afterPlay
+    ? ('🌼 dnešních kytiček: '+Math.min(flowersToday,dailyGoal())+'/'+dailyGoal()+(flowersToday>dailyGoal()?(' + '+(flowersToday-dailyGoal())+' na louce'):''))
+    : 'ještě jsme dnes nehrály';
   var html=''+
   '<div class="screen rise" style="background:linear-gradient(180deg,#fdf6e3 0%,#f7edcf 55%,#eee2bd 100%);">'+
     '<div class="meadow"></div>'+
@@ -770,17 +1076,23 @@ function renderGarden(){
     '<div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:6px; z-index:30; padding:34px 22px; overflow-y:auto;">'+
       '<div class="bubble">'+esc(bubble)+'<div class="tail"></div></div>'+
       '<div style="width:190px; height:200px; animation:owlBreathe 4.5s ease-in-out infinite; transform-origin:center bottom; margin-top:8px;">'+owlSVG()+'</div>'+
-      '<button class="cta" id="playBtn" style="margin-top:10px;">'+(afterRound?'Další kolo':'Hrát')+'</button>'+
+      '<div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:16px; justify-content:center;">'+
+        '<button class="cta" id="playBtn">Počítání a čeština</button>'+
+        '<button class="cta build" id="buildBtn">'+
+          '<svg width="28" height="28" viewBox="0 0 40 40" style="flex:none;"><rect x="3" y="14" width="11" height="12" rx="3" fill="#efe4fb"></rect><rect x="15" y="14" width="11" height="12" rx="3" fill="#d8f0cf"></rect><rect x="27" y="14" width="10" height="12" rx="3" fill="#fcdcea"></rect></svg>'+
+          'Stavba slova</button>'+
+      '</div>'+
       '<div class="daypanel">'+
         '<div class="lbl">DNES V ZAHRADĚ</div>'+
         '<div class="big">'+playLabel+'</div>'+
-        '<div class="sub">'+ (DB.daily.rounds>0 ? ('hotová kola: '+DB.daily.rounds) : 'ještě jsme dnes nehrály') +'</div>'+
+        '<div class="sub">'+subLine+'</div>'+
       '</div>'+
     '</div>'+
   '</div>';
   app.innerHTML=html;
   setOwlMood(app, sleeping?'sleepy':'normal');
   document.getElementById('playBtn').addEventListener('click', function(){ startRoundFlow(); });
+  document.getElementById('buildBtn').addEventListener('click', function(){ enterBuild(); });
   document.getElementById('gearBtn').addEventListener('click', openGate);
 }
 
@@ -884,10 +1196,12 @@ function renderRound(){
   if(R.feedback==='correct'){ if(!R._celeb) R._celeb = Math.random()<0.5?'smile':'cool'; owlMood=R._celeb; }
   else { R._celeb=null; owlMood = sleeping?'sleepy':'normal'; }
 
+  var shown = R.freePlay ? R.grownThisRound : Math.min(((DB.daily.flowers&&DB.daily.flowers.total)||0), R.goal);
+  var capLabel = R.freePlay ? 'Kytičky pro louku' : 'Dnešní zahrada';
   var head=''+
     '<div class="rhead">'+
-      '<div class="cap">Dnešní zahrada · '+R.grown+'/'+R.goal+'</div>'+
-      '<div class="slots">'+slotsHTML(R.grown,R.goal)+'</div>'+
+      '<div class="cap">'+capLabel+' · '+shown+'/'+R.goal+'</div>'+
+      '<div class="slots">'+slotsHTML(shown,R.goal)+'</div>'+
     '</div>';
 
   var questionHTML, answersHTML='';
@@ -1042,6 +1356,586 @@ function renderSummary(){
   document.getElementById('backBtn').addEventListener('click', function(){ G.round=null; G.screen='garden'; render(); });
 }
 
+/* ---------------- stavba slova (build mode) ---------------- */
+var ROLE={
+  pre:{cls:'r-pre',  label:'PŘEDPONA', name:'předpona', fg:'#7a5bc0', soft:'#a68ad0'},
+  kor:{cls:'r-kor',  label:'KOŘEN',    name:'kořen',    fg:'#5f8a4a', soft:'#a9cf95'},
+  prip:{cls:'r-prip',label:'PŘÍPONA',  name:'přípona',  fg:'#c85f8b', soft:'#e79ab5'},
+  kon:{cls:'r-kon',  label:'KONCOVKA', name:'koncovka', fg:'#b9892b', soft:'#c9a94e'},
+  none:{cls:'r-none',label:'?',        name:'',         fg:'#b7a582', soft:'#b7a582'}
+};
+/* --- skládačka: sada dne generovaná z rodin v ROZBOR_BANK --- */
+// vhodná rodina = jediná podoba kořene (bez střídání hlásek) + dost slov na skládání
+var SKLAD_MIN_WORDS=4;
+function chunkOf(e,role){ for(var i=0;i<e.chunks.length;i++){ if(e.chunks[i].r===role) return e.chunks[i].t; } return null; }
+function skladEligible(){
+  var fams=rozborFamilies(), out=[];
+  Object.keys(fams).forEach(function(k){ var f=fams[k];
+    if(f.koreny.length===1 && f.slova.length>=SKLAD_MIN_WORDS) out.push(f);
+  });
+  return out;
+}
+function buildSkladSet(f){
+  var pre=[], suf=[], kon=[], valid=[];
+  function reg(arr,t){ if(t===null) return null;
+    for(var i=0;i<arr.length;i++){ if(arr[i].id===t) return t; }
+    arr.push({id:t,text:t}); return t; }
+  var sorted=f.slova.slice().sort(function(a,b){ return a.chunks.length-b.chunks.length || (a.w<b.w?-1:1); });
+  for(var i=0;i<sorted.length;i++){ var e=sorted[i];
+    valid.push({ pre:reg(pre,chunkOf(e,'pre')), suf:reg(suf,chunkOf(e,'prip')),
+                 kon:reg(kon,chunkOf(e,'kon')), word:e.w, parts:e.chunks });
+  }
+  return { root:f.koreny[0], fam:f.fam, pre:pre, suf:suf, kon:kon, valid:valid };
+}
+var SKLAD=null; // sada dne — naplní skladForToday()
+function skladForToday(){
+  var st=BD().sklad, elig=skladEligible(), f=null;
+  if(st.fam){ for(var i=0;i<elig.length;i++){ if(elig[i].fam===st.fam){ f=elig[i]; break; } } }
+  if(!f){
+    var cands=elig.filter(function(x){ return x.fam!==DB.lastSkladFam; });
+    if(!cands.length) cands=elig;
+    f=cands[rnd(cands.length)];
+    st.fam=f.fam; st.found=[]; st.done=false; DB.lastSkladFam=f.fam; saveDB();
+  }
+  SKLAD=buildSkladSet(f);
+  return SKLAD;
+}
+
+/* --- rozbor: sada dne z ROZBOR_BANK (váha podle chyb, bez nedávných slov) --- */
+var ROZBOR_N=3;      // slov na den
+var ROZ_RECENT_MAX=15;
+var ROZ_BY_ID=null;
+function rozById(id){
+  if(!ROZ_BY_ID){ ROZ_BY_ID={}; for(var i=0;i<ROZBOR_BANK.length;i++) ROZ_BY_ID[ROZBOR_BANK[i].id]=ROZBOR_BANK[i]; }
+  return ROZ_BY_ID[id]||null;
+}
+function rozStat(id){ return DB.rozstats[id]||{seen:0,correct:0,wrong:0}; }
+function rozPickSession(n){
+  var maxLvl=(DB.settings.setup&&DB.settings.setup.czechLevel)||3;
+  var rows=DB.settings.activeRows;
+  function build(lvlCap, ignoreRows, ignoreRecent){
+    var out=[];
+    for(var i=0;i<ROZBOR_BANK.length;i++){ var e=ROZBOR_BANK[i];
+      if(e.level>lvlCap) continue;
+      if(!ignoreRows && e.row && rows.indexOf(e.row)<0) continue;
+      if(!ignoreRecent && DB.rozRecent.indexOf(e.id)>=0) continue;
+      var st=rozStat(e.id); var att=st.correct+st.wrong; var err=att? st.wrong/att : 0;
+      var w=1+2*err; if(att===0) w*=1.3;
+      out.push({w:w, item:e});
+    }
+    return out;
+  }
+  var cands=build(maxLvl,false,false);
+  if(cands.length<n) cands=build(3,false,false);   // úroveň moc přísná -> uvolnit
+  if(cands.length<n) cands=build(3,true,false);    // aktivní řady moc přísné -> uvolnit
+  if(cands.length<n){ DB.rozRecent=[]; cands=build(3,true,true); } // zásoba vyčerpaná -> reset
+  var set=[];
+  while(set.length<n && cands.length){
+    var p=weightedPick(cands);
+    set.push(p.item.id);
+    cands=cands.filter(function(c){ return c.item.id!==p.item.id; });
+  }
+  return set;
+}
+function rozSession(){
+  var st=BD().rozbor;
+  var valid = st.set && st.set.length===ROZBOR_N && st.set.every(function(id){ return !!rozById(id); });
+  if(!valid){ st.set=rozPickSession(ROZBOR_N); st.idx=0; st.done=false; saveDB(); }
+  return st.set.map(rozById);
+}
+function rozResetPick(){
+  var S=rozSession(), st=BD().rozbor;
+  var cur=S[Math.min(st.idx,S.length-1)];
+  var p=[]; for(var i=0;i<cur.chunks.length;i++) p.push(null);
+  G.bRoz={pick:p, ok:false, wrong:false, hadWrong:false};
+}
+/* --- obrázky pro spojovačku (ploché SVG ve stylu hry); klíč = sloupec svg v xlsx --- */
+var PIC_SVG={
+fish:'<svg width="90" height="58" viewBox="0 0 90 58"><polygon points="58,29 84,14 84,44" fill="#eaa07a"></polygon><ellipse cx="36" cy="29" rx="27" ry="15" fill="#f4b393"></ellipse><polygon points="34,15 46,4 50,17" fill="#eaa07a"></polygon><path d="M12 25 q5 4 0 8" fill="none" stroke="#eaa07a" stroke-width="2.4" stroke-linecap="round"></path><circle cx="23" cy="25" r="3.6" fill="#5a4632"></circle></svg>',
+pond:'<svg width="92" height="60" viewBox="0 0 92 60"><ellipse cx="46" cy="40" rx="38" ry="15" fill="#bcd8ea"></ellipse><ellipse cx="46" cy="40" rx="38" ry="15" fill="none" stroke="#9cc0d8" stroke-width="2"></ellipse><path d="M40 44 a6 3 0 0 0 12 0" fill="none" stroke="#9cc0d8" stroke-width="2" stroke-linecap="round"></path><path d="M24 41 q-3 -10 1 -17" fill="none" stroke="#8fbd76" stroke-width="3" stroke-linecap="round"></path><path d="M30 41 q3 -8 -1 -14" fill="none" stroke="#8fbd76" stroke-width="3" stroke-linecap="round"></path><ellipse cx="25" cy="22" rx="2.6" ry="5.5" fill="#a9835a"></ellipse></svg>',
+rod:'<svg width="66" height="76" viewBox="0 0 66 76"><line x1="10" y1="66" x2="52" y2="10" stroke="#a9835a" stroke-width="4.5" stroke-linecap="round"></line><line x1="52" y1="10" x2="54" y2="40" stroke="#b7a582" stroke-width="1.8"></line><path d="M54 40 q-7 5 -1 11 q6 0 4 -7" fill="none" stroke="#5a4632" stroke-width="2.6" stroke-linecap="round"></path></svg>',
+mill:'<svg width="86" height="82" viewBox="0 0 86 82"><polygon points="28,74 58,74 52,36 34,36" fill="#ecdcb4" stroke="#c9b48a" stroke-width="2"></polygon><rect x="38" y="58" width="10" height="16" rx="4" fill="#a9835a"></rect><rect x="36" y="44" width="6" height="6" rx="1.5" fill="#bcd8ea"></rect><rect x="44" y="44" width="6" height="6" rx="1.5" fill="#bcd8ea"></rect><g stroke="#b78a56" stroke-width="3" stroke-linecap="round"><line x1="43" y1="32" x2="18" y2="14"></line><line x1="43" y1="32" x2="68" y2="14"></line><line x1="43" y1="32" x2="18" y2="50"></line><line x1="43" y1="32" x2="68" y2="50"></line></g><g fill="#e79ab5"><polygon points="18,14 26,20 22,26 14,20"></polygon><polygon points="68,14 60,20 64,26 72,20"></polygon><polygon points="18,50 26,44 22,38 14,44"></polygon><polygon points="68,50 60,44 64,38 72,44"></polygon></g><circle cx="43" cy="32" r="4" fill="#8a7350"></circle></svg>',
+grinder:'<svg width="70" height="80" viewBox="0 0 70 80"><rect x="19" y="34" width="34" height="36" rx="5" fill="#c98f5a" stroke="#8a7350" stroke-width="2"></rect><polygon points="24,34 48,34 43,22 29,22" fill="#b7895a" stroke="#8a7350" stroke-width="1.5"></polygon><rect x="25" y="56" width="22" height="11" rx="3" fill="#ecdcb4"></rect><circle cx="36" cy="61.5" r="2.2" fill="#8a7350"></circle><line x1="36" y1="22" x2="36" y2="11" stroke="#8a7350" stroke-width="2.5" stroke-linecap="round"></line><path d="M36 11 h13" stroke="#8a7350" stroke-width="2.5" stroke-linecap="round"></path><circle cx="50" cy="11" r="4" fill="#a9835a"></circle></svg>',
+miller:'<svg width="76" height="82" viewBox="0 0 76 82"><path d="M44 46 q-9 0 -9 13 v13 h20 v-13 q0 -13 -9 -13 z" fill="#ecdcb4" stroke="#c9b48a" stroke-width="2"></path><path d="M44 46 l-5 -6 h16 l-5 6 z" fill="#dcc99e"></path><circle cx="47" cy="60" r="2.4" fill="#fff" opacity="0.75"></circle><circle cx="52" cy="66" r="1.8" fill="#fff" opacity="0.6"></circle><path d="M14 42 q8 -9 17 0 l3 30 h-23 z" fill="#9fb98a" stroke="#7fa06a" stroke-width="1.5"></path><circle cx="22.5" cy="26" r="9.5" fill="#f4d0b0"></circle><path d="M11 24 q11.5 -13 23 0 q-11.5 5 -23 0 z" fill="#f4e6c6" stroke="#c9b48a" stroke-width="1.5"></path><circle cx="19" cy="26" r="1.4" fill="#5a4632"></circle><circle cx="26" cy="26" r="1.4" fill="#5a4632"></circle></svg>',
+voda:'<svg width="60" height="80" viewBox="0 0 60 80"><path d="M30 8 C30 8 11 40 11 55 a19 19 0 0 0 38 0 C49 40 30 8 30 8 Z" fill="#bcd8ea" stroke="#9cc0d8" stroke-width="2"></path><path d="M22 50 a8 8 0 0 0 3 12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.6"></path></svg>',
+vodnik:'<svg width="76" height="82" viewBox="0 0 76 82"><path d="M20 70 q18 8 36 0 l-3 -12 h-30 z" fill="#5f8a4a"></path><circle cx="38" cy="40" r="21" fill="#8fbd76" stroke="#6fa257" stroke-width="2"></circle><path d="M16 30 q22 -20 44 0 q-4 -8 -22 -8 q-18 0 -22 8 z" fill="#c85f5f" stroke="#a84a4a" stroke-width="1.5"></path><circle cx="30" cy="40" r="4.5" fill="#fff"></circle><circle cx="46" cy="40" r="4.5" fill="#fff"></circle><circle cx="30" cy="41" r="2.2" fill="#3a3226"></circle><circle cx="46" cy="41" r="2.2" fill="#3a3226"></circle><circle cx="24" cy="48" r="3" fill="#e79ab5" opacity="0.6"></circle><circle cx="52" cy="48" r="3" fill="#e79ab5" opacity="0.6"></circle><path d="M31 52 q7 5 14 0" fill="none" stroke="#4a7038" stroke-width="2.2" stroke-linecap="round"></path><circle cx="60" cy="62" r="3" fill="#bcd8ea"></circle></svg>',
+podvodni:'<svg width="80" height="76" viewBox="0 0 80 76"><path d="M6 20 q10 -8 20 0 t20 0 t20 0 t8 0 v50 h-68 z" fill="#bcd8ea" stroke="#9cc0d8" stroke-width="2"></path><path d="M22 60 q-4 -12 2 -22" fill="none" stroke="#5f8a4a" stroke-width="3.5" stroke-linecap="round"></path><path d="M28 60 q4 -10 -1 -18" fill="none" stroke="#6fa257" stroke-width="3.5" stroke-linecap="round"></path><circle cx="52" cy="34" r="3" fill="#fff" opacity="0.75"></circle><circle cx="60" cy="46" r="2.2" fill="#fff" opacity="0.6"></circle><circle cx="55" cy="54" r="1.6" fill="#fff" opacity="0.6"></circle><g transform="translate(50 44)"><ellipse cx="0" cy="0" rx="12" ry="6.5" fill="#eaa07a"></ellipse><polygon points="10,0 20,-6 20,6" fill="#e08a63"></polygon><circle cx="-6" cy="-1" r="1.8" fill="#3a3226"></circle></g></svg>',
+plane:'<svg width="88" height="60" viewBox="0 0 88 60"><path d="M8 30 q6 -6 20 -6 h34 l16 6 -16 6 h-34 q-14 0 -20 -6 z" fill="#cdd8e2" stroke="#9fb0c0" stroke-width="2"></path><polygon points="34,24 46,6 52,6 46,24" fill="#aebfce"></polygon><polygon points="34,36 46,54 52,54 46,36" fill="#aebfce"></polygon><polygon points="66,24 74,16 78,16 74,24" fill="#aebfce"></polygon><circle cx="24" cy="30" r="3" fill="#bcd8ea"></circle><circle cx="34" cy="30" r="3" fill="#bcd8ea"></circle></svg>',
+pilot:'<svg width="72" height="82" viewBox="0 0 72 82"><path d="M18 44 q18 -10 36 0 l3 30 h-42 z" fill="#7a8aa0" stroke="#5f6d80" stroke-width="1.5"></path><path d="M30 44 l6 8 6 -8 z" fill="#e2e7ee"></path><circle cx="36" cy="30" r="14" fill="#f4d0b0"></circle><path d="M20 26 q16 -18 32 0 q0 -10 -16 -10 q-16 0 -16 10 z" fill="#8a6d4a" stroke="#6a5236" stroke-width="1.5"></path><path d="M21 27 q15 6 30 0" fill="none" stroke="#6a5236" stroke-width="2"></path><circle cx="30" cy="30" r="4.5" fill="#bcd8ea" stroke="#5f6d80" stroke-width="1.5"></circle><circle cx="42" cy="30" r="4.5" fill="#bcd8ea" stroke="#5f6d80" stroke-width="1.5"></circle><line x1="34.5" y1="30" x2="37.5" y2="30" stroke="#5f6d80" stroke-width="1.5"></line></svg>',
+airport:'<svg width="86" height="76" viewBox="0 0 86 76"><rect x="6" y="60" width="74" height="12" rx="2" fill="#c9bfa8"></rect><g stroke="#fff" stroke-width="2.5" stroke-dasharray="7 7"><line x1="10" y1="66" x2="76" y2="66"></line></g><rect x="40" y="20" width="16" height="42" rx="3" fill="#e0d3b0" stroke="#c2b088" stroke-width="2"></rect><path d="M38 22 q10 -12 20 0 z" fill="#9cc0d8" stroke="#7fa5bd" stroke-width="1.5"></path><rect x="44" y="30" width="8" height="8" rx="1.5" fill="#bcd8ea"></rect><line x1="48" y1="20" x2="48" y2="10" stroke="#8a7350" stroke-width="2"></line><circle cx="48" cy="9" r="2.5" fill="#c85f5f"></circle><path d="M6 40 q6 -4 16 -4 h20 l10 4 -10 4 h-20 q-10 0 -16 -4 z" fill="#cdd8e2" stroke="#9fb0c0" stroke-width="1.5"></path></svg>',
+castle:'<svg width="86" height="78" viewBox="0 0 86 78"><g fill="#e0d3b0" stroke="#c2b088" stroke-width="2"><rect x="14" y="28" width="14" height="44"></rect><rect x="58" y="28" width="14" height="44"></rect><rect x="30" y="40" width="26" height="32"></rect></g><g fill="#c9b48a"><rect x="14" y="24" width="4" height="6"></rect><rect x="20" y="24" width="4" height="6"></rect><rect x="26" y="24" width="4" height="6"></rect><rect x="56" y="24" width="4" height="6"></rect><rect x="62" y="24" width="4" height="6"></rect><rect x="68" y="24" width="4" height="6"></rect></g><path d="M38 72 v-14 a5 5 0 0 1 10 0 v14 z" fill="#8a6d4a"></path><rect x="18" y="36" width="6" height="8" rx="1" fill="#9cc0d8"></rect><rect x="62" y="36" width="6" height="8" rx="1" fill="#9cc0d8"></rect><polygon points="43,8 43,18 55,13" fill="#c85f5f"></polygon><line x1="43" y1="8" x2="43" y2="24" stroke="#8a7350" stroke-width="2"></line></svg>',
+garden:'<svg width="84" height="76" viewBox="0 0 84 76"><rect x="6" y="58" width="72" height="14" rx="3" fill="#b58a5a"></rect><path d="M6 58 q38 -10 72 0" fill="#8fbd76"></path><g stroke="#ecdcb4" stroke-width="4"><line x1="16" y1="48" x2="16" y2="70"></line><line x1="42" y1="48" x2="42" y2="70"></line><line x1="68" y1="48" x2="68" y2="70"></line></g><line x1="10" y1="56" x2="74" y2="56" stroke="#ecdcb4" stroke-width="4"></line><g transform="translate(24 40)"><line x1="0" y1="0" x2="0" y2="16" stroke="#5f8a4a" stroke-width="2.5"></line><circle cx="0" cy="-3" r="7" fill="#e79ab5"></circle><circle cx="0" cy="-3" r="3" fill="#f6d17a"></circle></g><g transform="translate(54 36)"><line x1="0" y1="0" x2="0" y2="20" stroke="#5f8a4a" stroke-width="2.5"></line><circle cx="0" cy="-3" r="7" fill="#c9b3ef"></circle><circle cx="0" cy="-3" r="3" fill="#f6d17a"></circle></g></svg>',
+gardener:'<svg width="74" height="82" viewBox="0 0 74 82"><path d="M16 46 q18 -10 34 0 l3 28 h-40 z" fill="#8fbd76" stroke="#6fa257" stroke-width="1.5"></path><circle cx="33" cy="30" r="13" fill="#f4d0b0"></circle><ellipse cx="33" cy="20" rx="22" ry="6" fill="#e6c98a" stroke="#c9a95e" stroke-width="1.5"></ellipse><path d="M24 20 q9 -12 18 0 z" fill="#e6c98a" stroke="#c9a95e" stroke-width="1.5"></path><circle cx="28" cy="31" r="1.5" fill="#5a4632"></circle><circle cx="38" cy="31" r="1.5" fill="#5a4632"></circle><g transform="translate(52 50)"><path d="M0 6 h16 l-2 16 h-12 z" fill="#9cc0d8" stroke="#7fa5bd" stroke-width="1.5"></path><path d="M16 10 q8 -2 10 4" fill="none" stroke="#7fa5bd" stroke-width="3" stroke-linecap="round"></path><path d="M0 6 q-4 -6 2 -8" fill="none" stroke="#7fa5bd" stroke-width="3"></path></g></svg>',
+trees:'<svg width="84" height="76" viewBox="0 0 84 76"><g><rect x="40" y="50" width="6" height="20" fill="#a9835a"></rect><polygon points="43,10 26,40 60,40" fill="#5f8a4a"></polygon><polygon points="43,24 30,50 56,50" fill="#6fa257"></polygon></g><g opacity="0.95"><rect x="14" y="54" width="5" height="16" fill="#a9835a"></rect><polygon points="16.5,26 4,50 29,50" fill="#7aad60"></polygon><polygon points="16.5,36 7,56 26,56" fill="#8fbd76"></polygon></g><g opacity="0.95"><rect x="65" y="54" width="5" height="16" fill="#a9835a"></rect><polygon points="67.5,28 55,52 80,52" fill="#7aad60"></polygon><polygon points="67.5,38 58,56 77,56" fill="#8fbd76"></polygon></g></svg>',
+forester:'<svg width="72" height="82" viewBox="0 0 72 82"><path d="M16 46 q18 -10 34 0 l3 28 h-40 z" fill="#7a6a45" stroke="#5f5236" stroke-width="1.5"></path><path d="M33 46 l0 28" stroke="#5f5236" stroke-width="1.5"></path><circle cx="33" cy="30" r="13" fill="#f4d0b0"></circle><path d="M15 28 q18 -6 36 0 q-2 -14 -18 -14 q-16 0 -18 14 z" fill="#4a7038" stroke="#3a5a2c" stroke-width="1.5"></path><path d="M15 28 q18 8 36 0" fill="#4a7038"></path><path d="M48 14 q8 -4 10 2 q-6 0 -10 2 z" fill="#e6c98a"></path><circle cx="28" cy="31" r="1.5" fill="#5a4632"></circle><circle cx="38" cy="31" r="1.5" fill="#5a4632"></circle></svg>',
+jungle:'<svg width="84" height="78" viewBox="0 0 84 78"><rect x="40" y="40" width="6" height="32" rx="2" fill="#a9835a"></rect><g fill="#4a7038" stroke="#3a5a2c" stroke-width="1.5"><path d="M43 40 q-26 -6 -34 -22 q22 -2 34 14 z"></path><path d="M43 40 q26 -6 34 -22 q-22 -2 -34 14 z"></path><path d="M43 34 q-22 -10 -26 -28 q20 4 26 22 z"></path><path d="M43 34 q22 -10 26 -28 q-20 4 -26 22 z"></path></g><g fill="#6fa257"><ellipse cx="20" cy="60" rx="14" ry="9"></ellipse><ellipse cx="62" cy="62" rx="15" ry="9"></ellipse><ellipse cx="40" cy="68" rx="16" ry="9"></ellipse></g><path d="M28 58 q4 6 0 12" fill="none" stroke="#8fbd76" stroke-width="2.5" stroke-linecap="round"></path></svg>'
+};
+function picHTML(e){ return e.svg ? PIC_SVG[e.svg] : '<span class="spemoji">'+e.emoji+'</span>'; }
+
+/* --- spojovačka: jedna RODINA za kolo, dítě spojí příbuzná slova s obrázky --- */
+var SPOJ_MAX=3;        // kolik členů rodiny ukázat (2–3)
+var SPOJ_RECENT_MAX=5; // kolik posledních rodin vynechat
+function spojHasPic(e){ return !!(e.svg||e.emoji); }
+// rodiny, které mají ≥2 zobrazitelné (obrázkové) členy v rámci úrovně/řad
+function spojEligibleFams(lvlCap, ignoreRows){
+  var rows=DB.settings.activeRows, m={};
+  for(var i=0;i<ROZBOR_BANK.length;i++){ var e=ROZBOR_BANK[i];
+    if(!spojHasPic(e)) continue;
+    if(e.level>lvlCap) continue;
+    if(!ignoreRows && e.row && rows.indexOf(e.row)<0) continue;
+    (m[e.fam]||(m[e.fam]=[])).push(e);
+  }
+  var out=[]; for(var f in m){ if(m[f].length>=2) out.push({fam:f, members:m[f]}); }
+  return out;
+}
+function spojPickFamily(){
+  var maxLvl=(DB.settings.setup&&DB.settings.setup.czechLevel)||3;
+  var fams=spojEligibleFams(maxLvl,false);
+  if(!fams.length) fams=spojEligibleFams(3,false);   // úroveň moc přísná -> uvolnit
+  if(!fams.length) fams=spojEligibleFams(3,true);    // aktivní řady moc přísné -> uvolnit
+  var cands=fams.filter(function(f){ return DB.spojRecent.indexOf(f.fam)<0; });
+  if(!cands.length){ DB.spojRecent=[]; cands=fams; } // všechny nedávno -> reset
+  if(!cands.length) return {fam:null, ids:[]};
+  var pick=cands[rnd(cands.length)];
+  var mem=shuffle(pick.members.slice()).slice(0,SPOJ_MAX);
+  return {fam:pick.fam, ids:mem.map(function(x){ return x.id; })};
+}
+function spojSession(){
+  var st=BD().spoj;
+  var valid = st.set && st.set.length>=2 && st.fam && st.set.every(function(id){ return !!rozById(id); });
+  if(!valid){ var p=spojPickFamily(); st.fam=p.fam; st.set=p.ids; st.matched=[]; st.done=false; saveDB(); }
+  return st.set.map(rozById);
+}
+// kořen k zobrazení = nejčastější kořen mezi ukázanými členy
+function spojRoot(members){
+  var cnt={};
+  for(var i=0;i<members.length;i++){ for(var j=0;j<members[i].chunks.length;j++){ var c=members[i].chunks[j];
+    if(c.r==='kor'){ cnt[c.t]=(cnt[c.t]||0)+1; } } }
+  var best=null,bn=0; for(var k in cnt){ if(cnt[k]>bn){ bn=cnt[k]; best=k; } }
+  return best;
+}
+var HINT_WAIT_MS=25000;  // sova "přemýšlí" — šance přijít na to sama (bez viditelného odpočtu)
+
+function BD(){ return DB.daily.build; }
+
+/* --- small svg helpers --- */
+function miniFlower(){ return '<svg width="22" height="24" viewBox="0 0 40 44"><g transform="translate(20 20)">'+
+  '<circle cx="0" cy="-9" r="7.5" fill="#f2b6c6"></circle><circle cx="9" cy="-1" r="7.5" fill="#f2b6c6"></circle>'+
+  '<circle cx="5.5" cy="8" r="7.5" fill="#f2b6c6"></circle><circle cx="-5.5" cy="8" r="7.5" fill="#f2b6c6"></circle>'+
+  '<circle cx="-9" cy="-1" r="7.5" fill="#f2b6c6"></circle><circle cx="0" cy="0" r="5" fill="#f6d17a"></circle></g></svg>'; }
+function checkSVG(color){ return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"></path></svg>'; }
+function iconSklad(){ return '<svg width="104" height="52" viewBox="0 0 104 52"><rect x="4" y="12" width="28" height="28" rx="7" fill="#c9b3ef"></rect><rect x="38" y="12" width="28" height="28" rx="7" fill="#a9cf95"></rect><rect x="72" y="12" width="28" height="28" rx="7" fill="#f0b3cc"></rect></svg>'; }
+function iconRozbor(){ return '<svg width="100" height="58" viewBox="0 0 100 58"><rect x="8" y="24" width="58" height="13" rx="6.5" fill="#e6d9b6"></rect><circle cx="60" cy="30" r="16" fill="none" stroke="#8a7350" stroke-width="5"></circle><line x1="72" y1="42" x2="86" y2="54" stroke="#8a7350" stroke-width="6" stroke-linecap="round"></line></svg>'; }
+function iconSpoj(){ return '<svg width="104" height="52" viewBox="0 0 104 52"><line x1="20" y1="26" x2="78" y2="26" stroke="#a9cf95" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 9"></line><circle cx="20" cy="26" r="11" fill="#c9b3ef"></circle><g transform="translate(82 26) scale(.62)"><circle cx="0" cy="-9" r="7.5" fill="#f2b6c6"></circle><circle cx="9" cy="-1" r="7.5" fill="#f2b6c6"></circle><circle cx="5.5" cy="8" r="7.5" fill="#f2b6c6"></circle><circle cx="-5.5" cy="8" r="7.5" fill="#f2b6c6"></circle><circle cx="-9" cy="-1" r="7.5" fill="#f2b6c6"></circle><circle cx="0" cy="0" r="5" fill="#f6d17a"></circle></g></svg>'; }
+function mpartsHTML(parts){
+  var h=''; for(var i=0;i<parts.length;i++){ var p=parts[i]; h+='<span class="mpart '+ROLE[p.r].cls+'">'+esc(p.t)+'</span>'; }
+  return '<div style="display:flex; align-items:center;">'+h+'</div>';
+}
+
+/* --- navigation --- */
+function enterBuild(){
+  markActivity();
+  G.screen='build'; G.bView='hub';
+  G._buildStart=Date.now();
+  G.bSk={pre:null,suf:null,kon:null,msg:null};
+  rozResetPick();
+  G.bSpoj={sel:null,msg:null,picOrder:null};
+  resetHint();
+  render();
+}
+function exitBuild(){
+  if(G._buildStart){ DB.daily.playMs=(DB.daily.playMs||0)+(Date.now()-G._buildStart); G._buildStart=0; saveDB(); }
+  resetHint();
+  G.screen='garden'; render();
+}
+// nové kolo s čerstvým obsahem (po dokončení nebo při otevření hotové hry)
+function newSkladRound(){ var st=BD().sklad; st.fam=null; st.found=[]; st.done=false; saveDB(); skladForToday(); }
+function newRozborRound(){ var st=BD().rozbor; st.set=rozPickSession(ROZBOR_N); st.idx=0; st.done=false; saveDB(); rozResetPick(); }
+function newSpojRound(){ var st=BD().spoj; st.fam=null; st.set=[]; st.matched=[]; st.done=false; saveDB(); spojSession(); }
+function openBuildGame(v){
+  markActivity();
+  G.bView=v;
+  if(v==='sklad'){ if(BD().sklad.done) newSkladRound(); else skladForToday(); G.bSk={pre:null,suf:null,kon:null,msg:null}; resetHint(); }
+  else if(v==='rozbor'){ if(BD().rozbor.done) newRozborRound(); else rozResetPick(); }
+  else if(v==='spoj'){ if(BD().spoj.done) newSpojRound(); else spojSession(); G.bSpoj={sel:null,msg:null,picOrder:null}; }
+  render();
+}
+
+/* --- skládačka logic --- */
+function pickSk(lane,id){ markActivity(); G.bSk[lane]=(G.bSk[lane]===id)?null:id; G.bSk.msg=null; render(); }
+function clearSk(lane){ markActivity(); G.bSk[lane]=null; G.bSk.msg=null; render(); }
+function buildSk(){
+  markActivity();
+  var st=BD().sklad;
+  var m=null;
+  for(var i=0;i<SKLAD.valid.length;i++){ var v=SKLAD.valid[i];
+    if((v.pre||null)===(G.bSk.pre||null) && (v.suf||null)===(G.bSk.suf||null) && (v.kon||null)===(G.bSk.kon||null)){ m=v; break; } }
+  if(!m){ G.bSk.msg='no'; render(); return; }
+  if(st.found.indexOf(m.word)>=0){ G.bSk.msg='dup'; render(); return; }
+  st.found.push(m.word);
+  if(st.found.length>=SKLAD.valid.length){ st.done=true; st.everDone=true; }
+  // našla slovo, zatímco sova ještě přemýšlela -> přišla na to sama
+  var selfSolved = (G.bHint.phase==='wait');
+  resetHint();
+  G.bSk={pre:null,suf:null,kon:null,msg:selfSolved?'self':null};
+  addFlower('build');
+  render();
+}
+
+/* --- nápověda: sova přemýšlí, pak odkrývá postupně (nikdy celé slovo) --- */
+function resetHint(){
+  if(G.bHint && G.bHint.t) clearTimeout(G.bHint.t);
+  G.bHint={phase:'idle', wi:-1, stage:0, t:null};
+}
+function hintTargetIdx(){
+  var found=BD().sklad.found;
+  for(var i=0;i<SKLAD.valid.length;i++){ if(found.indexOf(SKLAD.valid[i].word)<0) return i; }
+  return -1;
+}
+function pressHint(){
+  markActivity();
+  var H=G.bHint;
+  if(H.phase==='wait') return;
+  if(H.phase==='shown' && H.stage>=2) return;
+  if(H.phase==='idle'){
+    var wi=hintTargetIdx(); if(wi<0) return;
+    H.wi=wi; H.stage=1;
+  } else {
+    H.stage=2;
+  }
+  H.phase='wait';
+  G.bSk.msg=null;
+  H.t=setTimeout(function(){
+    H.phase='shown'; H.t=null;
+    var st=BD().sklad; st.hints=(st.hints||0)+1; saveDB();
+    if(G.screen==='build' && G.bView==='sklad') render();
+  }, HINT_WAIT_MS);
+  render();
+}
+function hintTileKey(v){
+  if(v.pre) return 'pre:'+v.pre;
+  if(v.suf) return 'suf:'+v.suf;
+  if(v.kon) return 'kon:'+v.kon;
+  return null;
+}
+function hintTileText(key){
+  if(!key) return '';
+  var lane=key.split(':')[0], id=key.split(':')[1];
+  var arr=SKLAD[lane];
+  for(var i=0;i<arr.length;i++){ if(arr[i].id===id) return arr[i].text; }
+  return '';
+}
+
+/* --- rozbor logic --- */
+function rozTap(i){
+  markActivity();
+  if(G.bRoz.ok || BD().rozbor.done) return;
+  var order=[null,'pre','kor','prip','kon'];
+  G.bRoz.pick[i]=order[(order.indexOf(G.bRoz.pick[i])+1)%order.length];
+  G.bRoz.wrong=false;
+  render();
+}
+function rozCheck(){
+  markActivity();
+  var st=BD().rozbor, S=rozSession();
+  var cur=S[Math.min(st.idx,S.length-1)];
+  var ok=true;
+  for(var i=0;i<cur.chunks.length;i++){ if(G.bRoz.pick[i]!==cur.chunks[i].r){ ok=false; break; } }
+  var rs=DB.rozstats[cur.id]||(DB.rozstats[cur.id]={seen:0,correct:0,wrong:0});
+  if(ok){
+    rs.seen++; if(!G.bRoz.hadWrong) rs.correct++;
+    DB.rozRecent.push(cur.id);
+    if(DB.rozRecent.length>ROZ_RECENT_MAX) DB.rozRecent=DB.rozRecent.slice(-ROZ_RECENT_MAX);
+    G.bRoz.ok=true; G.bRoz.wrong=false;
+    if(st.idx>=S.length-1){ st.done=true; st.everDone=true; }
+    saveDB();
+    addFlower('build');
+  } else {
+    G.bRoz.wrong=true; G.bRoz.hadWrong=true;
+    rs.wrong++;
+    st.wrong=(st.wrong||0)+1; saveDB();
+  }
+  render();
+}
+function rozNext(){
+  markActivity();
+  var st=BD().rozbor; st.idx++; saveDB();
+  rozResetPick();
+  render();
+}
+
+/* --- spojovačka logic --- */
+function spojTapWord(id){
+  markActivity();
+  if(BD().spoj.matched.indexOf(id)>=0) return;
+  G.bSpoj.sel=id; G.bSpoj.msg=null; render();
+}
+function spojTapPic(id){
+  markActivity();
+  var st=BD().spoj, S=spojSession(), item=null;
+  for(var i=0;i<S.length;i++){ if(S[i].id===id) item=S[i]; }
+  if(!item || st.matched.indexOf(item.id)>=0) return;
+  if(!G.bSpoj.sel){ G.bSpoj.msg='first'; render(); return; }
+  if(G.bSpoj.sel===item.id){
+    st.matched.push(item.id);
+    var rs=DB.rozstats[item.id]||(DB.rozstats[item.id]={seen:0,correct:0,wrong:0}); rs.seen++;
+    if(st.matched.length>=S.length){
+      st.done=true; st.everDone=true;
+      if(st.fam){ DB.spojRecent.push(st.fam);
+        if(DB.spojRecent.length>SPOJ_RECENT_MAX) DB.spojRecent=DB.spojRecent.slice(-SPOJ_RECENT_MAX); }
+    }
+    G.bSpoj.sel=null; G.bSpoj.msg=null;
+    saveDB();
+    addFlower('build');
+  } else {
+    st.wrong=(st.wrong||0)+1; saveDB();
+    G.bSpoj.msg='miss';
+  }
+  render();
+}
+
+/* --- build rendering --- */
+function legendHTML(){
+  var h=''; ['pre','kor','prip','kon'].forEach(function(r){
+    h+='<div class="lgd '+ROLE[r].cls+'"><span class="dot"></span><span>'+ROLE[r].name+'</span></div>'; });
+  return '<div class="legend">'+h+'</div>';
+}
+function moreLabel(){
+  return G.bView==='sklad' ? 'Nová slova' : (G.bView==='rozbor' ? 'Další slova' : 'Další rodina');
+}
+function doneButtonsHTML(){
+  return '<div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center;">'+
+    '<button class="cta small" id="bMore">'+moreLabel()+' 🌱</button>'+
+    '<button class="btn2" id="bHub" style="min-height:56px; font-size:20px;">Jiná hra</button>'+
+    '<button class="btn2" id="bExit" style="min-height:56px; font-size:20px;">Zahrada</button></div>';
+}
+function buildDonePanel(text){
+  return '<div class="bpanel">'+bigSprout()+'<div class="pt">'+text+'</div>'+doneButtonsHTML()+'</div>';
+}
+
+function hubHTML(){
+  var st=BD();
+  var full=((DB.daily.flowers&&DB.daily.flowers.total)||0)>=dailyGoal();
+  var cards=[
+    {key:'sklad',  title:'Skládačka',    desc:'Skládej slova z jednoho kořene',                 done:st.sklad.everDone,  icon:iconSklad()},
+    {key:'rozbor', title:'Rozbor slova', desc:'Urči předponu, kořen, příponu a koncovku',       done:st.rozbor.everDone, icon:iconRozbor()},
+    {key:'spoj',   title:'Spojovačka',   desc:'Přiřaď slovo k jeho obrázku',                    done:st.spoj.everDone,   icon:iconSpoj()}
+  ];
+  var ch='';
+  for(var i=0;i<cards.length;i++){ var c=cards[i];
+    ch+='<button class="bcard" data-g="'+c.key+'">'+
+      (c.done?'<div class="donebadge">'+checkSVG('#fff')+'</div>':'')+
+      '<div style="height:58px; display:flex; align-items:center; justify-content:center;">'+c.icon+'</div>'+
+      '<div class="bt">'+c.title+'</div><div class="bd">'+c.desc+'</div></button>';
+  }
+  return '<div class="bwrap">'+
+    '<div style="width:132px; height:140px; animation:owlBreathe 4.5s ease-in-out infinite; transform-origin:center bottom;">'+owlSVG()+'</div>'+
+    '<div class="bnote">Slova se skládají jako z kostiček. Vyber si hru a pěstuj kytičky!</div>'+
+    (full?'<div class="bmsg good">Dnešní zahrada je celá rozkvetlá! 🌸 Další kytičky rostou na louce.</div>':'')+
+    '<div class="bcards">'+ch+'</div>'+
+  '</div>';
+}
+
+function skladHTML(){
+  var st=BD().sklad;
+  if(!SKLAD || SKLAD.fam!==st.fam) skladForToday();
+  var H=G.bHint;
+  var hv=(H.wi>=0)?SKLAD.valid[H.wi]:null;
+  var wantLane={pre:false,suf:false,kon:false};
+  if(H.phase==='shown' && H.stage===1 && hv){ wantLane.pre=!!hv.pre; wantLane.suf=!!hv.suf; wantLane.kon=!!hv.kon; }
+  var wantTile=(H.phase==='shown' && H.stage===2 && hv)? hintTileKey(hv) : null;
+
+  function slotCol(lane, role){
+    var selId=G.bSk[lane], text=null;
+    var arr=SKLAD[lane];
+    for(var i=0;i<arr.length;i++){ if(arr[i].id===selId) text=arr[i].text; }
+    var want=wantLane[lane]?' want':'';
+    var inner = selId
+      ? '<button class="skslot '+ROLE[role].cls+want+'" data-clear="'+lane+'">'+esc(text)+'</button>'
+      : '<div class="skslot empty '+ROLE[role].cls+want+'">+</div>';
+    return '<div class="skcol">'+inner+'<span class="cl" style="color:'+ROLE[role].soft+';">'+ROLE[role].label+'</span></div>';
+  }
+  function tileRowHTML(label, lane, role){
+    var arr=SKLAD[lane], h='';
+    for(var i=0;i<arr.length;i++){ var t=arr[i];
+      var cls='tile '+ROLE[role].cls+(G.bSk[lane]===t.id?' sel':'')+((wantTile===lane+':'+t.id)?' want':'');
+      h+='<button class="'+cls+'" data-lane="'+lane+'" data-id="'+t.id+'">'+esc(t.text)+'</button>';
+    }
+    return '<div class="tilerow"><span class="cl" style="color:var(--muted2);">'+label+'</span><div class="tiles">'+h+'</div></div>';
+  }
+
+  // hint button state + message
+  var hintLabel='💡 Nápověda', hintDis=false, hintCls='';
+  if(st.done || hintTargetIdx()<0){ hintDis=true; }
+  else if(H.phase==='wait'){ hintDis=true; hintCls=' waiting'; hintLabel='Sova přemýšlí…'; }
+  else if(H.phase==='shown' && H.stage===1){ hintLabel='💡 Napověz víc'; }
+  else if(H.phase==='shown' && H.stage>=2){ hintDis=true; }
+  var hintMsg='';
+  if(H.phase==='wait'){
+    hintMsg='<div class="bmsg mut">🦉 Hmm, nech mě chvilku přemýšlet… zkus to zatím sama!</div>';
+  } else if(H.phase==='shown' && hv){
+    var txt;
+    if(H.stage===1){
+      if(!hv.pre && !hv.suf && !hv.kon){ txt='Zkus úplně samotný kořen — nic nepřidávej!'; }
+      else{ var need=[]; if(hv.pre) need.push('předponu'); need.push('kořen'); if(hv.suf) need.push('příponu'); if(hv.kon) need.push('koncovku');
+        txt='Zkus slovo, které má '+need.join(' + ')+'.'; }
+    } else {
+      if(!hv.pre && !hv.suf && !hv.kon){ txt='Nech všechna okénka prázdná a zmáčkni „Složit slovo“.'; }
+      else{ txt='Zkus dílek „'+esc(hintTileText(wantTile))+'“.'; }
+    }
+    hintMsg='<div class="bmsg mut">🦉 '+txt+'</div>';
+  }
+
+  // result message
+  var msg='';
+  if(G.bSk.msg==='no') msg='<div class="bmsg nudge">Takové slovo neznáme — zkus jinou kombinaci dílků.</div>';
+  else if(G.bSk.msg==='dup') msg='<div class="bmsg mut">To slovo už v zahradě kvete. Zkus složit další.</div>';
+  else if(G.bSk.msg==='self') msg='<div class="bmsg good">Vidíš! Přišla jsi na to úplně sama. 🌟</div>';
+
+  // found words
+  var fw='';
+  for(var i=0;i<SKLAD.valid.length;i++){ var v=SKLAD.valid[i];
+    if(st.found.indexOf(v.word)>=0) fw+='<div class="fword">'+miniFlower()+mpartsHTML(v.parts)+'</div>';
+  }
+
+  return '<div class="bwrap">'+
+    '<div class="bnote">Poskládej slovo z kořene <b style="color:#5f8a4a;">-'+esc(SKLAD.root)+'-</b>. Můžeš přidat předponu, příponu i koncovku. Kolik slov složíš?</div>'+
+    '<div class="sklane">'+
+      (SKLAD.pre.length? slotCol('pre','pre') : '')+
+      '<div class="skcol"><div class="skslot r-kor">'+esc(SKLAD.root)+'</div><span class="cl" style="color:'+ROLE.kor.soft+';">KOŘEN</span></div>'+
+      (SKLAD.suf.length? slotCol('suf','prip') : '')+
+      (SKLAD.kon.length? slotCol('kon','kon') : '')+
+    '</div>'+
+    '<div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; align-items:center;">'+
+      '<button class="cta small" id="skGo">Složit slovo</button>'+
+      '<button class="hintbtn'+hintCls+'" id="skHint"'+(hintDis?' disabled':'')+'>'+hintLabel+'</button>'+
+    '</div>'+
+    hintMsg+msg+
+    '<div style="display:flex; flex-direction:column; gap:10px; align-items:center;">'+
+      (SKLAD.pre.length? tileRowHTML('PŘEDPONY','pre','pre') : '')+
+      (SKLAD.suf.length? tileRowHTML('PŘÍPONY','suf','prip') : '')+
+      (SKLAD.kon.length? tileRowHTML('KONCOVKY','kon','kon') : '')+
+    '</div>'+
+    '<div class="foundwrap">'+
+      '<div style="font-size:19px; font-weight:800; color:var(--muted2);">Vypěstovaná slova · '+st.found.length+'/'+SKLAD.valid.length+'</div>'+
+      '<div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; min-height:50px;">'+fw+'</div>'+
+    '</div>'+
+    (st.done? buildDonePanel('Skvěle! Složila jsi všech '+SKLAD.valid.length+' slov.') : '')+
+  '</div>';
+}
+
+function rozborHTML(){
+  var st=BD().rozbor, S=rozSession();
+  var dots='';
+  for(var i=0;i<S.length;i++){
+    var c = (st.done || i<st.idx) ? '#86bf67' : (i===st.idx ? '#eaa93f' : '#e6d3a6');
+    dots+='<span style="background:'+c+';"></span>';
+  }
+  var head='<div class="rozdots">'+dots+'</div>';
+  if(st.done && !G.bRoz.ok){
+    return '<div class="bwrap">'+head+buildDonePanel('Všechna slova jsou rozebraná! 🌱')+'</div>';
+  }
+  var cur=S[Math.min(st.idx,S.length-1)];
+  if(G.bRoz.pick.length!==cur.chunks.length) rozResetPick();
+  var chunks='';
+  for(i=0;i<cur.chunks.length;i++){
+    var pick=G.bRoz.pick[i]||'none', R2=ROLE[pick];
+    chunks+='<button class="rozbit" data-i="'+i+'">'+
+      '<span class="ch '+R2.cls+'">'+esc(cur.chunks[i].t)+'</span>'+
+      '<span class="cl" style="color:'+R2.fg+';">'+R2.label+'</span></button>';
+  }
+  var body='<div class="bwrap">'+head+
+    '<div class="bnote">Ťukni na dílek a obarvi ho — čím je ve slově <b style="color:var(--ink);">'+esc(cur.w)+'</b>?</div>'+
+    '<div class="rozrow">'+chunks+'</div>';
+  if(G.bRoz.ok){
+    var isLast = st.idx>=S.length-1;
+    body+='<div class="bpanel"><div class="pt">Přesně tak! Slovo je rozebrané.</div>'+
+      (isLast? doneButtonsHTML() : '<button class="cta small" id="rozNext">Další slovo</button>')+'</div>';
+  } else {
+    body+='<button class="cta small" id="rozCheck">Zkontrolovat</button>';
+    if(G.bRoz.wrong) body+='<div class="bmsg nudge">Ještě ne — přebarvi dílky a zkus to znovu. Kořen je hlavní část slova.</div>';
+  }
+  return body+'</div>';
+}
+
+function spojHTML(){
+  var st=BD().spoj, S=spojSession();
+  // stabilní zamíchané pořadí obrázků (spočítá se jednou za vstup do hry)
+  var ids=S.map(function(w){ return w.id; });
+  var po=G.bSpoj.picOrder;
+  var poOk = po && po.length===ids.length && po.every(function(id){ return ids.indexOf(id)>=0; });
+  if(!poOk){ G.bSpoj.picOrder=shuffle(ids.slice()); po=G.bSpoj.picOrder; }
+  var words='';
+  for(var i=0;i<S.length;i++){ var w=S[i];
+    var hit=st.matched.indexOf(w.id)>=0, sel=G.bSpoj.sel===w.id;
+    words+='<button class="spword'+(hit?' hit':(sel?' sel':''))+'" data-w="'+w.id+'">'+mpartsHTML(w.chunks)+
+      (hit?'<span style="margin-left:auto; display:flex;">'+checkSVG('#5a8a4a')+'</span>':'')+'</button>';
+  }
+  var pics='';
+  for(i=0;i<po.length;i++){ var it=rozById(po[i]);
+    var hit2=st.matched.indexOf(it.id)>=0;
+    pics+='<button class="sppic'+(hit2?' hit':'')+'" data-p="'+it.id+'">'+picHTML(it)+'</button>';
+  }
+  var msg='';
+  if(G.bSpoj.msg==='first') msg='<div class="bmsg">Nejdřív ťukni na slovo.</div>';
+  else if(G.bSpoj.msg==='miss') msg='<div class="bmsg nudge">To není ono, zkus jinou.</div>';
+  var root=spojRoot(S);
+  var famLine = (st.fam && root)
+    ? '<div class="spfam">Všechna slova jsou příbuzná — patří do rodiny <b>'+esc(st.fam)+'</b> (kořen <b>'+esc(root)+'-</b>).</div>'
+    : '';
+  return '<div class="bwrap">'+
+    '<div class="bnote">Ťukni na slovo a pak na obrázek, který k němu patří.</div>'+
+    famLine+
+    '<div class="spwrap"><div class="spcol">'+words+'</div><div class="spcol">'+pics+'</div></div>'+
+    msg+
+    (st.done? buildDonePanel('Výborně! Celá rodina '+esc(st.fam||'')+' je pohromadě. 🌱') : '')+
+  '</div>';
+}
+
+function renderBuild(){
+  G.screen='build';
+  var v=G.bView||'hub';
+  var titles={hub:'Stavba slova', sklad:'Skládačka', rozbor:'Rozbor slova', spoj:'Spojovačka'};
+  var goal=dailyGoal(), tot=(DB.daily.flowers&&DB.daily.flowers.total)||0;
+  var html=''+
+  '<div class="screen rise" style="background:linear-gradient(180deg,#fdf7ea 0%,#f6edd4 100%); display:flex; flex-direction:column;">'+
+    '<div class="bhead">'+
+      '<button class="bback" id="bBack">‹ '+(v==='hub'?'Zahrada':'Zpět')+'</button>'+
+      '<div class="btitle">'+titles[v]+'</div>'+
+      '<div class="bchip">'+miniFlower()+'<span>'+Math.min(tot,goal)+'/'+goal+'</span></div>'+
+    '</div>'+
+    legendHTML()+
+    (v==='hub'?hubHTML(): v==='sklad'?skladHTML(): v==='rozbor'?rozborHTML(): spojHTML())+
+  '</div>';
+  app.innerHTML=html;
+  if(v==='hub') setOwlMood(app, G._idle?'sleepy':'cool');
+
+  document.getElementById('bBack').addEventListener('click', function(){
+    markActivity();
+    if(G.bView==='hub'){ exitBuild(); }
+    else { resetHint(); G.bView='hub'; render(); }
+  });
+  var bMore=app.querySelector('#bMore'); if(bMore) bMore.addEventListener('click', function(){ openBuildGame(G.bView); });
+  var bHub=app.querySelector('#bHub'); if(bHub) bHub.addEventListener('click', function(){ markActivity(); resetHint(); G.bView='hub'; render(); });
+  var bExit=app.querySelector('#bExit'); if(bExit) bExit.addEventListener('click', exitBuild);
+
+  if(v==='hub'){
+    app.querySelectorAll('.bcard').forEach(function(b){ b.addEventListener('click', function(){ openBuildGame(b.getAttribute('data-g')); }); });
+  } else if(v==='sklad'){
+    app.querySelectorAll('.tile').forEach(function(b){ b.addEventListener('click', function(){ pickSk(b.getAttribute('data-lane'), b.getAttribute('data-id')); }); });
+    app.querySelectorAll('.skslot[data-clear]').forEach(function(b){ b.addEventListener('click', function(){ clearSk(b.getAttribute('data-clear')); }); });
+    var go=app.querySelector('#skGo'); if(go) go.addEventListener('click', buildSk);
+    var hb=app.querySelector('#skHint'); if(hb) hb.addEventListener('click', pressHint);
+  } else if(v==='rozbor'){
+    app.querySelectorAll('.rozbit').forEach(function(b){ b.addEventListener('click', function(){ rozTap(parseInt(b.getAttribute('data-i'),10)); }); });
+    var rc=app.querySelector('#rozCheck'); if(rc) rc.addEventListener('click', rozCheck);
+    var rn=app.querySelector('#rozNext'); if(rn) rn.addEventListener('click', rozNext);
+  } else {
+    app.querySelectorAll('.spword').forEach(function(b){ b.addEventListener('click', function(){ spojTapWord(b.getAttribute('data-w')); }); });
+    app.querySelectorAll('.sppic').forEach(function(b){ b.addEventListener('click', function(){ spojTapPic(b.getAttribute('data-p')); }); });
+  }
+}
+
 /* ---------------- parent gate + panel ---------------- */
 function openGate(){
   markActivity();
@@ -1153,7 +2047,8 @@ function confirmReset(){
   app.insertAdjacentHTML('beforeend', html);
   document.getElementById('cNo').addEventListener('click', function(){ document.getElementById('cov').remove(); });
   document.getElementById('cYes').addEventListener('click', function(){
-    DB.garden={totalFlowers:0}; DB.facts={}; DB.words={}; DB.daily={date:todayStr(),playMs:0,rounds:0};
+    DB.garden={totalFlowers:0}; DB.facts={}; DB.words={};
+    DB.daily=clone(DEFAULTS.daily); DB.daily.date=todayStr(); DB.history=[];
     saveDB(); document.getElementById('cov').remove();
     var p=document.getElementById('pov'); if(p) p.remove();
     render();

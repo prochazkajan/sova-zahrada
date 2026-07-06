@@ -279,7 +279,17 @@
   .hintbtn:hover{transform:translateY(-2px);}
   .hintbtn:disabled{opacity:.55; cursor:default; transform:none;}
   .hintbtn.waiting{animation:hintFade 2.4s ease-in-out infinite;}
+  .skpreview{display:flex; align-items:center; gap:1px; min-height:56px; padding:6px 22px; border-radius:20px;
+    background:#fffaf0; border:3px dashed var(--border2); font-family:var(--font);}
+  .skpreview .seg{font-size:clamp(30px,5vmin,46px); font-weight:800; line-height:1;}
+  .skpreview .seg.dim{color:#c9b48a;}
+  .skpvlbl{font-size:12px; font-weight:800; letter-spacing:.5px; color:var(--muted2);}
   /* rozbor */
+  .rozpal{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; padding:2px 12px;}
+  .pchip{display:inline-flex; align-items:center; gap:8px; min-height:52px; padding:8px 18px; border-radius:26px; border:3px solid;
+    font-size:clamp(15px,2.4vmin,19px); font-weight:800; transition:transform .15s ease, box-shadow .2s ease; font-family:var(--font);}
+  .pchip .pdot{width:20px; height:20px; border-radius:50%; border:2px solid rgba(90,70,40,.18);}
+  .pchip.on{transform:translateY(-2px); box-shadow:0 0 0 4px rgba(90,70,40,.18);}
   .rozdots{display:flex; gap:10px;}
   .rozdots span{width:14px; height:14px; border-radius:50%;}
   .rozrow{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:flex-start;}
@@ -287,7 +297,13 @@
   .rozbit .ch{min-width:62px; padding:10px 16px; text-align:center; font-size:clamp(34px,6vmin,54px); font-weight:800;
     border-radius:18px; border:4px solid; transition:all .2s ease; font-family:var(--font);}
   /* spojovačka */
-  .spwrap{display:flex; gap:clamp(24px,8vw,110px); align-items:center; justify-content:center; flex-wrap:wrap;}
+  .spwrap{position:relative; display:flex; gap:clamp(24px,8vw,110px); align-items:center; justify-content:center; flex-wrap:wrap;}
+  .spvines{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:1;}
+  .spvines path{fill:none; stroke:#8fbd76; stroke-width:5; stroke-linecap:round; opacity:.85;
+    stroke-dasharray:600; stroke-dashoffset:600; animation:vineGrow .55s ease forwards;}
+  .spvines circle{fill:#e79ab5; opacity:0; animation:vineLeaf .4s ease .4s forwards;}
+  @keyframes vineGrow{to{stroke-dashoffset:0;}}
+  @keyframes vineLeaf{to{opacity:.9;}}
   .spcol{display:flex; flex-direction:column; gap:14px;}
   .spword{display:flex; align-items:center; gap:8px; min-width:200px; min-height:60px; padding:10px 16px; border-radius:22px;
     background:var(--cream); border:3px solid var(--border); box-shadow:0 8px 18px -12px rgba(90,70,40,.35); transition:transform .25s ease;
@@ -359,7 +375,7 @@
 </head>
 <body>
 <div id="app"></div>
-<div class="ver">v0.15</div>
+<div class="ver">v0.16</div>
 
 <script>
 "use strict";
@@ -1449,6 +1465,7 @@ var ROLE={
 /* --- skládačka: sada dne generovaná z rodin v ROZBOR_BANK --- */
 // vhodná rodina = jediná podoba kořene (bez střídání hlásek) + dost slov na skládání
 var SKLAD_MIN_WORDS=4;
+var SKLAD_MAX_WORDS=5;   // kolo se dá dokončit i u velkých rodin
 function chunkOf(e,role){ for(var i=0;i<e.chunks.length;i++){ if(e.chunks[i].r===role) return e.chunks[i].t; } return null; }
 function skladEligible(){
   var fams=rozborFamilies(), out=[];
@@ -1463,6 +1480,7 @@ function buildSkladSet(f){
     for(var i=0;i<arr.length;i++){ if(arr[i].id===t) return t; }
     arr.push({id:t,text:t}); return t; }
   var sorted=f.slova.slice().sort(function(a,b){ return a.chunks.length-b.chunks.length || (a.w<b.w?-1:1); });
+  if(sorted.length>SKLAD_MAX_WORDS) sorted=sorted.slice(0,SKLAD_MAX_WORDS);
   for(var i=0;i<sorted.length;i++){ var e=sorted[i];
     valid.push({ pre:reg(pre,chunkOf(e,'pre')), suf:reg(suf,chunkOf(e,'prip')),
                  kon:reg(kon,chunkOf(e,'kon')), word:e.w, parts:e.chunks });
@@ -1529,7 +1547,8 @@ function rozResetPick(){
   var S=rozSession(), st=BD().rozbor;
   var cur=S[Math.min(st.idx,S.length-1)];
   var p=[]; for(var i=0;i<cur.chunks.length;i++) p.push(null);
-  G.bRoz={pick:p, ok:false, wrong:false, hadWrong:false};
+  var brush=(G.bRoz&&G.bRoz.brush)?G.bRoz.brush:'kor';  // barva se přenáší mezi slovy
+  G.bRoz={pick:p, ok:false, wrong:false, hadWrong:false, brush:brush};
 }
 /* --- obrázky pro spojovačku (ploché SVG ve stylu hry); klíč = sloupec svg v xlsx --- */
 var PIC_SVG={
@@ -1707,13 +1726,40 @@ function hintTileText(key){
   for(var i=0;i<arr.length;i++){ if(arr[i].id===id) return arr[i].text; }
   return '';
 }
+function skTileText(lane,id){
+  if(!id) return null; var arr=SKLAD[lane];
+  for(var i=0;i<arr.length;i++){ if(arr[i].id===id) return arr[i].text; }
+  return null;
+}
+// živý náhled skládaného slova — dítě si slovo přečte dřív, než ho složí
+function skPreviewHTML(){
+  var segs=[];
+  var pt=skTileText('pre',G.bSk.pre); if(pt) segs.push({t:pt,r:'pre'});
+  segs.push({t:SKLAD.root,r:'kor'});
+  var sf=skTileText('suf',G.bSk.suf); if(sf) segs.push({t:sf,r:'prip'});
+  var kn=skTileText('kon',G.bSk.kon); if(kn) segs.push({t:kn,r:'kon'});
+  var onlyRoot=(segs.length===1);
+  var h='';
+  for(var i=0;i<segs.length;i++){
+    h+='<span class="seg'+(onlyRoot?' dim':'')+'" style="color:'+(onlyRoot?'':ROLE[segs[i].r].fg)+';">'+esc(segs[i].t)+'</span>';
+  }
+  return '<div style="display:flex; flex-direction:column; align-items:center; gap:4px;">'+
+    '<span class="skpvlbl">SKLÁDÁŠ SLOVO</span>'+
+    '<div class="skpreview">'+h+'</div></div>';
+}
 
-/* --- rozbor logic --- */
-function rozTap(i){
+/* --- rozbor logic (paleta barev: vyber barvu, natři dílky) --- */
+function rozBrush(role){
   markActivity();
   if(G.bRoz.ok || BD().rozbor.done) return;
-  var order=[null,'pre','kor','prip','kon'];
-  G.bRoz.pick[i]=order[(order.indexOf(G.bRoz.pick[i])+1)%order.length];
+  G.bRoz.brush=role; G.bRoz.wrong=false;
+  render();
+}
+function rozPaint(i){
+  markActivity();
+  if(G.bRoz.ok || BD().rozbor.done) return;
+  var b=G.bRoz.brush||'kor';
+  G.bRoz.pick[i]=(G.bRoz.pick[i]===b)?null:b;   // ťuk na stejnou barvu = smazat
   G.bRoz.wrong=false;
   render();
 }
@@ -1845,6 +1891,28 @@ function bindSpojDrag(){
   });
 }
 
+// úponek: po správném spojení nakresli šlahoun od slova k jeho obrázku
+function drawSpojVines(){
+  var svg=document.getElementById('spVines'); if(!svg) return;
+  var wrap=svg.parentNode, base=wrap.getBoundingClientRect();
+  if(!base.width){ svg.innerHTML=''; return; }
+  svg.setAttribute('viewBox','0 0 '+base.width+' '+base.height);
+  var matched=BD().spoj.matched, h='';
+  for(var i=0;i<matched.length;i++){
+    var w=wrap.querySelector('.spword[data-w="'+matched[i]+'"]');
+    var p=wrap.querySelector('.sppic[data-p="'+matched[i]+'"]');
+    if(!w||!p) continue;
+    var wr=w.getBoundingClientRect(), pr=p.getBoundingClientRect();
+    var x1=wr.right-base.left, y1=wr.top+wr.height/2-base.top;
+    var x2=pr.left-base.left,  y2=pr.top+pr.height/2-base.top;
+    if(x2<=x1){ continue; }          // sloupce se zalomily (úzká obrazovka) -> nekresli
+    var mx=(x1+x2)/2;
+    h+='<path d="M'+x1+' '+y1+' C '+mx+' '+y1+' '+mx+' '+y2+' '+x2+' '+y2+'"></path>';
+    h+='<circle cx="'+mx+'" cy="'+((y1+y2)/2)+'" r="6"></circle>';
+  }
+  svg.innerHTML=h;
+}
+
 /* --- build rendering --- */
 function legendHTML(){
   var h=''; ['pre','kor','prip','kon'].forEach(function(r){
@@ -1955,6 +2023,7 @@ function skladHTML(){
       (SKLAD.suf.length? laneCol('suf','prip') : '')+
       (SKLAD.kon.length? laneCol('kon','kon') : '')+
     '</div>'+
+    skPreviewHTML()+
     '<div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; align-items:center;">'+
       '<button class="cta small" id="skGo">Složit slovo</button>'+
       '<button class="hintbtn'+hintCls+'" id="skHint"'+(hintDis?' disabled':'')+'>'+hintLabel+'</button>'+
@@ -1988,8 +2057,15 @@ function rozborHTML(){
       '<span class="ch '+R2.cls+'">'+esc(cur.chunks[i].t)+'</span>'+
       '<span class="cl" style="color:'+R2.fg+';">'+R2.label+'</span></button>';
   }
+  var pal='';
+  ['pre','kor','prip','kon'].forEach(function(r){
+    var on=(G.bRoz.brush===r);
+    pal+='<button class="pchip '+ROLE[r].cls+(on?' on':'')+'" data-brush="'+r+'">'+
+      '<span class="pdot" style="background:'+ROLE[r].fg+';"></span>'+ROLE[r].name+'</button>';
+  });
   var body='<div class="bwrap">'+head+
-    '<div class="bnote">Ťukni na dílek a obarvi ho — čím je ve slově <b style="color:var(--ink);">'+esc(cur.w)+'</b>?</div>'+
+    '<div class="bnote">Vyber barvu a natři dílky slova <b style="color:var(--ink);">'+esc(cur.w)+'</b>. Čím je která část?</div>'+
+    '<div class="rozpal">'+pal+'</div>'+
     '<div class="rozrow">'+chunks+'</div>';
   if(G.bRoz.ok){
     var isLast = st.idx>=S.length-1;
@@ -2030,7 +2106,7 @@ function spojHTML(){
   return '<div class="bwrap">'+
     '<div class="bnote">Přetáhni slovo prstem na obrázek, který k němu patří. Nebo ťukni na slovo a pak na obrázek.</div>'+
     famLine+
-    '<div class="spwrap"><div class="spcol">'+words+'</div><div class="spcol">'+pics+'</div></div>'+
+    '<div class="spwrap"><svg class="spvines" id="spVines"></svg><div class="spcol">'+words+'</div><div class="spcol">'+pics+'</div></div>'+
     msg+
     (st.done? buildDonePanel('Výborně! Celá rodina '+esc(st.fam||'')+' je pohromadě. 🌱') : '')+
   '</div>';
@@ -2071,12 +2147,14 @@ function renderBuild(){
     var go=app.querySelector('#skGo'); if(go) go.addEventListener('click', buildSk);
     var hb=app.querySelector('#skHint'); if(hb) hb.addEventListener('click', pressHint);
   } else if(v==='rozbor'){
-    app.querySelectorAll('.rozbit').forEach(function(b){ b.addEventListener('click', function(){ rozTap(parseInt(b.getAttribute('data-i'),10)); }); });
+    app.querySelectorAll('.pchip').forEach(function(b){ b.addEventListener('click', function(){ rozBrush(b.getAttribute('data-brush')); }); });
+    app.querySelectorAll('.rozbit').forEach(function(b){ b.addEventListener('click', function(){ rozPaint(parseInt(b.getAttribute('data-i'),10)); }); });
     var rc=app.querySelector('#rozCheck'); if(rc) rc.addEventListener('click', rozCheck);
     var rn=app.querySelector('#rozNext'); if(rn) rn.addEventListener('click', rozNext);
   } else {
     bindSpojDrag();
     app.querySelectorAll('.sppic').forEach(function(b){ b.addEventListener('click', function(){ spojTapPic(b.getAttribute('data-p')); }); });
+    drawSpojVines();
   }
 }
 

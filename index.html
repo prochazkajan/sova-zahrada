@@ -260,8 +260,7 @@
     font-size:clamp(28px,5vmin,44px); font-weight:800; border:4px solid; border-radius:18px; font-family:var(--font);}
   .skslot.empty{border-style:dashed; font-size:28px; opacity:.8;}
   .skslot.want{animation:hintFade 1.6s ease-in-out infinite;}
-  .tilerow{display:flex; flex-direction:column; align-items:center; gap:7px;}
-  .tiles{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+  .lanetiles{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:210px; margin-top:6px;}
   .tile{min-width:74px; min-height:58px; padding:0 14px; font-size:26px; font-weight:800; border:3px solid; border-radius:16px;
     box-shadow:0 5px 12px -7px rgba(90,70,40,.4); transition:transform .2s ease, box-shadow .2s ease;}
   .tile:hover{transform:translateY(-3px);}
@@ -291,8 +290,13 @@
   .spwrap{display:flex; gap:clamp(24px,8vw,110px); align-items:center; justify-content:center; flex-wrap:wrap;}
   .spcol{display:flex; flex-direction:column; gap:14px;}
   .spword{display:flex; align-items:center; gap:8px; min-width:200px; min-height:60px; padding:10px 16px; border-radius:22px;
-    background:var(--cream); border:3px solid var(--border); box-shadow:0 8px 18px -12px rgba(90,70,40,.35); transition:transform .25s ease;}
+    background:var(--cream); border:3px solid var(--border); box-shadow:0 8px 18px -12px rgba(90,70,40,.35); transition:transform .25s ease;
+    touch-action:none; user-select:none; -webkit-user-select:none; cursor:grab;}
   .spword:hover{transform:translateX(4px);}
+  .spword.dragsrc{opacity:.35;}
+  .spghost{position:fixed; z-index:99; pointer-events:none; opacity:.95; transition:none;
+    box-shadow:0 18px 34px -14px rgba(90,70,40,.5);}
+  .sppic.dropok{transform:scale(1.1); border-color:#eaa93f; background:#fdf3d8;}
   .spword.sel{background:#f3ebff; border-color:#c9b3ef; box-shadow:0 12px 24px -12px rgba(120,90,200,.5);}
   .spword.hit{background:#e4f2dc; border-color:#a9cf95; cursor:default;}
   .sppic{width:112px; height:112px; display:flex; align-items:center; justify-content:center; border-radius:24px;
@@ -355,7 +359,7 @@
 </head>
 <body>
 <div id="app"></div>
-<div class="ver">v0.14</div>
+<div class="ver">v0.15</div>
 
 <script>
 "use strict";
@@ -1772,6 +1776,75 @@ function spojTapPic(id){
   render();
 }
 
+/* --- spojovačka drag & drop (ťuknutí na slovo + obrázek funguje dál) --- */
+function spojClearDropHilite(){
+  var hs=app.querySelectorAll('.sppic.dropok');
+  for(var i=0;i<hs.length;i++) hs[i].classList.remove('dropok');
+}
+function spojPicAt(x,y){
+  var n=document.elementFromPoint(x,y);
+  while(n && n!==document.body){
+    if(n.classList && n.classList.contains('sppic')) return n;
+    n=n.parentNode;
+  }
+  return null;
+}
+function bindSpojDrag(){
+  var ws=app.querySelectorAll('.spword');
+  Array.prototype.forEach.call(ws, function(el){
+    el.addEventListener('pointerdown', function(ev){
+      var id=el.getAttribute('data-w');
+      if(BD().spoj.matched.indexOf(id)>=0) return;
+      markActivity();
+      ev.preventDefault();
+      try{ el.setPointerCapture(ev.pointerId); }catch(e){}
+      var sx=ev.clientX, sy=ev.clientY, moved=false, ghost=null;
+      function cleanup(){
+        el.removeEventListener('pointermove', onMove);
+        el.removeEventListener('pointerup', onUp);
+        el.removeEventListener('pointercancel', onCancel);
+        if(ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+        ghost=null;
+        el.classList.remove('dragsrc');
+        spojClearDropHilite();
+      }
+      function onMove(e2){
+        var dx=e2.clientX-sx, dy=e2.clientY-sy;
+        if(!moved){
+          if(dx*dx+dy*dy<64) return; // ještě ťuknutí, ne tažení
+          moved=true;
+          var r=el.getBoundingClientRect();
+          ghost=el.cloneNode(true);
+          ghost.className='spword spghost';
+          ghost.style.left=r.left+'px'; ghost.style.top=r.top+'px';
+          ghost.style.width=r.width+'px'; ghost.style.margin='0';
+          document.body.appendChild(ghost);
+          el.classList.add('dragsrc');
+        }
+        ghost.style.transform='translate('+dx+'px,'+dy+'px) scale(1.05)';
+        spojClearDropHilite();
+        var pic=spojPicAt(e2.clientX,e2.clientY);
+        if(pic && !pic.classList.contains('hit')) pic.classList.add('dropok');
+      }
+      function onUp(e2){
+        var wasDrag=moved, pic=wasDrag? spojPicAt(e2.clientX,e2.clientY) : null;
+        cleanup();
+        if(!wasDrag){ spojTapWord(id); return; }
+        if(pic && !pic.classList.contains('hit')){
+          G.bSpoj.sel=id;
+          spojTapPic(pic.getAttribute('data-p'));
+        } else {
+          G.bSpoj.sel=null; G.bSpoj.msg=null; render();
+        }
+      }
+      function onCancel(){ cleanup(); render(); }
+      el.addEventListener('pointermove', onMove);
+      el.addEventListener('pointerup', onUp);
+      el.addEventListener('pointercancel', onCancel);
+    });
+  });
+}
+
 /* --- build rendering --- */
 function legendHTML(){
   var h=''; ['pre','kor','prip','kon'].forEach(function(r){
@@ -1823,23 +1896,21 @@ function skladHTML(){
   if(H.phase==='shown' && H.stage===1 && hv){ wantLane.pre=!!hv.pre; wantLane.suf=!!hv.suf; wantLane.kon=!!hv.kon; }
   var wantTile=(H.phase==='shown' && H.stage===2 && hv)? hintTileKey(hv) : null;
 
-  function slotCol(lane, role){
+  function laneCol(lane, role){
     var selId=G.bSk[lane], text=null;
     var arr=SKLAD[lane];
     for(var i=0;i<arr.length;i++){ if(arr[i].id===selId) text=arr[i].text; }
     var want=wantLane[lane]?' want':'';
-    var inner = selId
+    var slot = selId
       ? '<button class="skslot '+ROLE[role].cls+want+'" data-clear="'+lane+'">'+esc(text)+'</button>'
       : '<div class="skslot empty '+ROLE[role].cls+want+'">+</div>';
-    return '<div class="skcol">'+inner+'<span class="cl" style="color:'+ROLE[role].soft+';">'+ROLE[role].label+'</span></div>';
-  }
-  function tileRowHTML(label, lane, role){
-    var arr=SKLAD[lane], h='';
-    for(var i=0;i<arr.length;i++){ var t=arr[i];
+    var tiles='';
+    for(var j=0;j<arr.length;j++){ var t=arr[j];
       var cls='tile '+ROLE[role].cls+(G.bSk[lane]===t.id?' sel':'')+((wantTile===lane+':'+t.id)?' want':'');
-      h+='<button class="'+cls+'" data-lane="'+lane+'" data-id="'+t.id+'">'+esc(t.text)+'</button>';
+      tiles+='<button class="'+cls+'" data-lane="'+lane+'" data-id="'+t.id+'">'+esc(t.text)+'</button>';
     }
-    return '<div class="tilerow"><span class="cl" style="color:var(--muted2);">'+label+'</span><div class="tiles">'+h+'</div></div>';
+    return '<div class="skcol">'+slot+'<span class="cl" style="color:'+ROLE[role].soft+';">'+ROLE[role].label+'</span>'+
+      '<div class="lanetiles">'+tiles+'</div></div>';
   }
 
   // hint button state + message
@@ -1879,21 +1950,16 @@ function skladHTML(){
   return '<div class="bwrap">'+
     '<div class="bnote">Poskládej slovo z kořene <b style="color:#5f8a4a;">-'+esc(SKLAD.root)+'-</b>. Můžeš přidat předponu, příponu i koncovku. Kolik slov složíš?</div>'+
     '<div class="sklane">'+
-      (SKLAD.pre.length? slotCol('pre','pre') : '')+
+      (SKLAD.pre.length? laneCol('pre','pre') : '')+
       '<div class="skcol"><div class="skslot r-kor">'+esc(SKLAD.root)+'</div><span class="cl" style="color:'+ROLE.kor.soft+';">KOŘEN</span></div>'+
-      (SKLAD.suf.length? slotCol('suf','prip') : '')+
-      (SKLAD.kon.length? slotCol('kon','kon') : '')+
+      (SKLAD.suf.length? laneCol('suf','prip') : '')+
+      (SKLAD.kon.length? laneCol('kon','kon') : '')+
     '</div>'+
     '<div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; align-items:center;">'+
       '<button class="cta small" id="skGo">Složit slovo</button>'+
       '<button class="hintbtn'+hintCls+'" id="skHint"'+(hintDis?' disabled':'')+'>'+hintLabel+'</button>'+
     '</div>'+
     hintMsg+msg+
-    '<div style="display:flex; flex-direction:column; gap:10px; align-items:center;">'+
-      (SKLAD.pre.length? tileRowHTML('PŘEDPONY','pre','pre') : '')+
-      (SKLAD.suf.length? tileRowHTML('PŘÍPONY','suf','prip') : '')+
-      (SKLAD.kon.length? tileRowHTML('KONCOVKY','kon','kon') : '')+
-    '</div>'+
     '<div class="foundwrap">'+
       '<div style="font-size:19px; font-weight:800; color:var(--muted2);">Vypěstovaná slova · '+st.found.length+'/'+SKLAD.valid.length+'</div>'+
       '<div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; min-height:50px;">'+fw+'</div>'+
@@ -1962,7 +2028,7 @@ function spojHTML(){
     ? '<div class="spfam">Všechna slova jsou příbuzná — patří do rodiny <b>'+esc(st.fam)+'</b> (kořen <b>'+esc(root)+'-</b>).</div>'
     : '';
   return '<div class="bwrap">'+
-    '<div class="bnote">Ťukni na slovo a pak na obrázek, který k němu patří.</div>'+
+    '<div class="bnote">Přetáhni slovo prstem na obrázek, který k němu patří. Nebo ťukni na slovo a pak na obrázek.</div>'+
     famLine+
     '<div class="spwrap"><div class="spcol">'+words+'</div><div class="spcol">'+pics+'</div></div>'+
     msg+
@@ -1982,7 +2048,7 @@ function renderBuild(){
       '<div class="btitle">'+titles[v]+'</div>'+
       '<div style="width:96px; flex:none;"></div>'+
     '</div>'+
-    legendHTML()+
+    (v==='rozbor'||v==='spoj'? legendHTML() : '')+
     (v==='hub'?hubHTML(): v==='sklad'?skladHTML(): v==='rozbor'?rozborHTML(): spojHTML())+
   '</div>';
   app.innerHTML=html;
@@ -2009,7 +2075,7 @@ function renderBuild(){
     var rc=app.querySelector('#rozCheck'); if(rc) rc.addEventListener('click', rozCheck);
     var rn=app.querySelector('#rozNext'); if(rn) rn.addEventListener('click', rozNext);
   } else {
-    app.querySelectorAll('.spword').forEach(function(b){ b.addEventListener('click', function(){ spojTapWord(b.getAttribute('data-w')); }); });
+    bindSpojDrag();
     app.querySelectorAll('.sppic').forEach(function(b){ b.addEventListener('click', function(){ spojTapPic(b.getAttribute('data-p')); }); });
   }
 }

@@ -297,6 +297,11 @@
   .rozdots span{width:14px; height:14px; border-radius:50%;}
   .rozrow{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:flex-start;}
   .rozbit.dropok .ch{border-color:#eaa93f; background:#fdf3d8; transform:scale(1.07);}
+  .rozconnect{position:relative; display:flex; flex-direction:column; align-items:center; gap:36px;}
+  .rozvines{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:1;}
+  .rozvines path{fill:none; stroke-width:5; stroke-linecap:round; animation:rozVineIn .3s ease both;}
+  .rozvines circle{animation:rozVineIn .3s ease both;}
+  @keyframes rozVineIn{from{opacity:0;}to{opacity:.9;}}
   .rozbit{display:flex; flex-direction:column; align-items:center; gap:7px; padding:4px 2px; background:none; border:none;}
   .rozbit .ch{min-width:62px; padding:10px 16px; text-align:center; font-size:clamp(34px,6vmin,54px); font-weight:800;
     border-radius:18px; border:4px solid; transition:all .2s ease; font-family:var(--font);}
@@ -379,7 +384,7 @@
 </head>
 <body>
 <div id="app"></div>
-<div class="ver">v0.17</div>
+<div class="ver">v0.18</div>
 
 <script>
 "use strict";
@@ -1968,6 +1973,29 @@ function bindRozDrag(){
   });
 }
 
+// úponky v rozboru: od barvy v paletě k dílku, který obarvila (jako spojovačka)
+function drawRozVines(){
+  var svg=document.getElementById('rozVines'); if(!svg) return;
+  var wrap=svg.parentNode, base=wrap.getBoundingClientRect();
+  if(!base.width){ svg.innerHTML=''; return; }
+  svg.setAttribute('viewBox','0 0 '+base.width+' '+base.height);
+  var picks=G.bRoz.pick||[], bits=wrap.querySelectorAll('.rozbit'), h='';
+  for(var i=0;i<picks.length;i++){
+    var role=picks[i]; if(!role) continue;
+    var chip=wrap.querySelector('.pchip[data-brush="'+role+'"]'), bit=bits[i];
+    if(!chip||!bit) continue;
+    var ch=bit.querySelector('.ch')||bit;
+    var cr=chip.getBoundingClientRect(), tr=ch.getBoundingClientRect();
+    var x1=cr.left+cr.width/2-base.left, y1=cr.bottom-base.top;
+    var x2=tr.left+tr.width/2-base.left, y2=tr.top-base.top;
+    if(y2<=y1) continue;
+    var my=(y1+y2)/2, col=ROLE[role].fg;
+    h+='<path d="M'+x1+' '+y1+' C '+x1+' '+my+' '+x2+' '+my+' '+x2+' '+y2+'" stroke="'+col+'"></path>';
+    h+='<circle cx="'+((x1+x2)/2)+'" cy="'+my+'" r="5" fill="'+col+'"></circle>';
+  }
+  svg.innerHTML=h;
+}
+
 // úponek: po správném spojení nakresli šlahoun od slova k jeho obrázku
 function drawSpojVines(){
   var svg=document.getElementById('spVines'); if(!svg) return;
@@ -2142,8 +2170,10 @@ function rozborHTML(){
   });
   var body='<div class="bwrap">'+head+
     '<div class="bnote">Přetáhni barvu na dílek slova <b style="color:var(--ink);">'+esc(cur.w)+'</b>. Nebo ťukni na barvu a pak na dílek. Čím je která část?</div>'+
-    '<div class="rozpal">'+pal+'</div>'+
-    '<div class="rozrow">'+chunks+'</div>';
+    '<div class="rozconnect"><svg class="rozvines" id="rozVines"></svg>'+
+      '<div class="rozpal">'+pal+'</div>'+
+      '<div class="rozrow">'+chunks+'</div>'+
+    '</div>';
   if(G.bRoz.ok){
     var isLast = st.idx>=S.length-1;
     body+='<div class="bpanel"><div class="pt">Přesně tak! Slovo je rozebrané.</div>'+
@@ -2228,6 +2258,7 @@ function renderBuild(){
     app.querySelectorAll('.rozbit').forEach(function(b){ b.addEventListener('click', function(){ rozPaint(parseInt(b.getAttribute('data-i'),10)); }); });
     var rc=app.querySelector('#rozCheck'); if(rc) rc.addEventListener('click', rozCheck);
     var rn=app.querySelector('#rozNext'); if(rn) rn.addEventListener('click', rozNext);
+    drawRozVines();
   } else {
     bindSpojDrag();
     app.querySelectorAll('.sppic').forEach(function(b){ b.addEventListener('click', function(){ spojTapPic(b.getAttribute('data-p')); }); });

@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "sova-zahrada",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8080"],
-      "port": 8080
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd / && python3 -c \"from http.server import HTTPServer, SimpleHTTPRequestHandler; from functools import partial; import os; H = partial(SimpleHTTPRequestHandler, directory='/private/tmp/sova-zahrada-preview'); HTTPServer(('127.0.0.1', int(os.environ['PORT'])), H).serve_forever()\""],
+      "port": 8080,
+      "autoPort": true
     }
   ]
 }

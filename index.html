@@ -287,12 +287,16 @@
   /* rozbor */
   .rozpal{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; padding:2px 12px;}
   .pchip{display:inline-flex; align-items:center; gap:8px; min-height:52px; padding:8px 18px; border-radius:26px; border:3px solid;
-    font-size:clamp(15px,2.4vmin,19px); font-weight:800; transition:transform .15s ease, box-shadow .2s ease; font-family:var(--font);}
+    font-size:clamp(15px,2.4vmin,19px); font-weight:800; transition:transform .15s ease, box-shadow .2s ease; font-family:var(--font);
+    touch-action:none; user-select:none; -webkit-user-select:none; cursor:grab;}
   .pchip .pdot{width:20px; height:20px; border-radius:50%; border:2px solid rgba(90,70,40,.18);}
   .pchip.on{transform:translateY(-2px); box-shadow:0 0 0 4px rgba(90,70,40,.18);}
+  .pchip.dragsrc{opacity:.4;}
+  .rozghost{position:fixed; z-index:99; pointer-events:none; opacity:.96; box-shadow:0 18px 34px -14px rgba(90,70,40,.5);}
   .rozdots{display:flex; gap:10px;}
   .rozdots span{width:14px; height:14px; border-radius:50%;}
   .rozrow{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:flex-start;}
+  .rozbit.dropok .ch{border-color:#eaa93f; background:#fdf3d8; transform:scale(1.07);}
   .rozbit{display:flex; flex-direction:column; align-items:center; gap:7px; padding:4px 2px; background:none; border:none;}
   .rozbit .ch{min-width:62px; padding:10px 16px; text-align:center; font-size:clamp(34px,6vmin,54px); font-weight:800;
     border-radius:18px; border:4px solid; transition:all .2s ease; font-family:var(--font);}
@@ -375,7 +379,7 @@
 </head>
 <body>
 <div id="app"></div>
-<div class="ver">v0.16</div>
+<div class="ver">v0.17</div>
 
 <script>
 "use strict";
@@ -1763,6 +1767,15 @@ function rozPaint(i){
   G.bRoz.wrong=false;
   render();
 }
+// přetažení barvy na dílek: dílek se natře (bez přepínání)
+function rozDropPaint(i, role){
+  markActivity();
+  if(G.bRoz.ok || BD().rozbor.done) return;
+  G.bRoz.brush=role;      // barva zůstane vybraná i pro ťukání
+  G.bRoz.pick[i]=role;
+  G.bRoz.wrong=false;
+  render();
+}
 function rozCheck(){
   markActivity();
   var st=BD().rozbor, S=rozSession();
@@ -1884,6 +1897,70 @@ function bindSpojDrag(){
         }
       }
       function onCancel(){ cleanup(); render(); }
+      el.addEventListener('pointermove', onMove);
+      el.addEventListener('pointerup', onUp);
+      el.addEventListener('pointercancel', onCancel);
+    });
+  });
+}
+
+/* --- rozbor drag & drop: přetáhni barvu z palety na dílek (jako spojovačka) --- */
+function rozClearDropHilite(){
+  var hs=app.querySelectorAll('.rozbit.dropok');
+  for(var i=0;i<hs.length;i++) hs[i].classList.remove('dropok');
+}
+function rozChunkAt(x,y){
+  var n=document.elementFromPoint(x,y);
+  while(n && n!==document.body){
+    if(n.classList && n.classList.contains('rozbit')) return n;
+    n=n.parentNode;
+  }
+  return null;
+}
+function bindRozDrag(){
+  if(G.bRoz.ok || BD().rozbor.done) return;
+  var chips=app.querySelectorAll('.pchip');
+  Array.prototype.forEach.call(chips, function(el){
+    el.addEventListener('pointerdown', function(ev){
+      var role=el.getAttribute('data-brush');
+      markActivity();
+      ev.preventDefault();
+      try{ el.setPointerCapture(ev.pointerId); }catch(e){}
+      var sx=ev.clientX, sy=ev.clientY, moved=false, ghost=null;
+      function cleanup(){
+        el.removeEventListener('pointermove', onMove);
+        el.removeEventListener('pointerup', onUp);
+        el.removeEventListener('pointercancel', onCancel);
+        if(ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+        ghost=null;
+        el.classList.remove('dragsrc');
+        rozClearDropHilite();
+      }
+      function onMove(e2){
+        var dx=e2.clientX-sx, dy=e2.clientY-sy;
+        if(!moved){
+          if(dx*dx+dy*dy<64) return; // ještě ťuknutí, ne tažení
+          moved=true;
+          var r=el.getBoundingClientRect();
+          ghost=el.cloneNode(true);
+          ghost.className=el.className.replace(' on','')+' rozghost';
+          ghost.style.left=r.left+'px'; ghost.style.top=r.top+'px';
+          ghost.style.width=r.width+'px'; ghost.style.margin='0';
+          document.body.appendChild(ghost);
+          el.classList.add('dragsrc');
+        }
+        ghost.style.transform='translate('+dx+'px,'+dy+'px) scale(1.05)';
+        rozClearDropHilite();
+        var ch=rozChunkAt(e2.clientX,e2.clientY);
+        if(ch) ch.classList.add('dropok');
+      }
+      function onUp(e2){
+        var wasDrag=moved, ch=wasDrag? rozChunkAt(e2.clientX,e2.clientY) : null;
+        cleanup();
+        if(!wasDrag){ rozBrush(role); return; } // ťuk = vyber barvu (funguje dál)
+        if(ch) rozDropPaint(parseInt(ch.getAttribute('data-i'),10), role);
+      }
+      function onCancel(){ cleanup(); }
       el.addEventListener('pointermove', onMove);
       el.addEventListener('pointerup', onUp);
       el.addEventListener('pointercancel', onCancel);
@@ -2064,7 +2141,7 @@ function rozborHTML(){
       '<span class="pdot" style="background:'+ROLE[r].fg+';"></span>'+ROLE[r].name+'</button>';
   });
   var body='<div class="bwrap">'+head+
-    '<div class="bnote">Vyber barvu a natři dílky slova <b style="color:var(--ink);">'+esc(cur.w)+'</b>. Čím je která část?</div>'+
+    '<div class="bnote">Přetáhni barvu na dílek slova <b style="color:var(--ink);">'+esc(cur.w)+'</b>. Nebo ťukni na barvu a pak na dílek. Čím je která část?</div>'+
     '<div class="rozpal">'+pal+'</div>'+
     '<div class="rozrow">'+chunks+'</div>';
   if(G.bRoz.ok){
@@ -2147,7 +2224,7 @@ function renderBuild(){
     var go=app.querySelector('#skGo'); if(go) go.addEventListener('click', buildSk);
     var hb=app.querySelector('#skHint'); if(hb) hb.addEventListener('click', pressHint);
   } else if(v==='rozbor'){
-    app.querySelectorAll('.pchip').forEach(function(b){ b.addEventListener('click', function(){ rozBrush(b.getAttribute('data-brush')); }); });
+    bindRozDrag();
     app.querySelectorAll('.rozbit').forEach(function(b){ b.addEventListener('click', function(){ rozPaint(parseInt(b.getAttribute('data-i'),10)); }); });
     var rc=app.querySelector('#rozCheck'); if(rc) rc.addEventListener('click', rozCheck);
     var rn=app.querySelector('#rozNext'); if(rn) rn.addEventListener('click', rozNext);
